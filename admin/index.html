@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#191920">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ניהול">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>ניהול העסק</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../shared/style.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="blobs" aria-hidden="true"><i></i><i></i></div>
+
+<div class="page">
+  <header class="mast">
+    <div class="logo" aria-hidden="true"><img src="../shared/mark.svg" alt="" width="30" height="20"></div>
+    <div class="name"><b>חי אליאסי</b><span>ניהול העסק</span></div>
+    <button class="icon-btn" id="refresh" type="button" aria-label="רענון" hidden>
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </header>
+  <p class="demo" id="demo" hidden>מצב הדגמה: נתונים לדוגמה, שום דבר לא נשמר בגוגל. הסיסמה: 1234</p>
+
+  <section id="login" class="login" hidden>
+    <form class="card" id="loginForm" novalidate>
+      <div class="row">
+        <label for="pw">סיסמת ניהול</label>
+        <input class="field" id="pw" type="password" autocomplete="current-password" required>
+        <p class="err" id="loginErr" role="alert"></p>
+        <button class="go" type="submit">כניסה</button>
+      </div>
+    </form>
+  </section>
+
+  <main id="view" tabindex="-1"></main>
+</div>
+
+<nav class="tabs" id="tabs" hidden aria-label="ניווט">
+  <a href="#today" data-tab="today"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>היום</span></a>
+  <a href="#people" data-tab="people"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8.5" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.6M18 14.8c2 .7 3.2 2.4 3.5 5.2"/></svg><span>אנשים</span></a>
+  <a href="#tools" data-tab="tools"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><span>כלים</span></a>
+  <a href="#stats" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M10 20V5M16 20v-6M22 20H2"/></svg><span>מספרים</span></a>
+</nav>
+
+<dialog id="dlg" class="sheet"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="../shared/api.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

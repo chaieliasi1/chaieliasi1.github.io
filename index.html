@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- הספרייה עוד לא פתוחה לציבור. כשחי מחליט לפתוח: למחוק את השורה הבאה ולקשר מהביו. -->
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#191920">
+<link rel="icon" href="admin/icon.svg" type="image/svg+xml">
+<title>כלים · חי אליאסי</title>
+<meta name="description" content="מחשבונים ומדריכים לניהול הכסף בבית, לזוגות צעירים ולמשפחות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="shared/style.css">
+<style>
+  .tools{display:grid;gap:1rem}
+  .tool{display:block;color:var(--ink);text-decoration:none;transition:transform .18s var(--ease)}
+  .tool:hover{transform:translateY(-2px)}
+  .tool .row{display:flex;align-items:center;gap:1rem}
+  .tool .main{flex:1;min-width:0}
+  .tool small{display:inline-block;font-size:.78rem;font-weight:700;color:var(--brand-deep);background:var(--brand-soft);border-radius:999px;padding:.1rem .6rem}
+  .tool h2{font-size:1.15rem;font-weight:700;margin-top:.35rem}
+  .tool p{color:var(--ink-dim);font-size:.94rem;margin-top:.15rem}
+  .tool .go-arrow{flex:none;width:2.4rem;height:2.4rem;border-radius:50%;display:grid;place-items:center;background:var(--card-2);color:var(--ink-dim)}
+</style>
+</head>
+<body>
+<div class="blobs" aria-hidden="true"><i></i><i></i></div>
+
+<header class="mast page">
+  <div class="logo" aria-hidden="true"><img src="shared/mark.svg" alt="" width="30" height="20"></div>
+  <div class="name"><b>חי אליאסי</b><span>יועץ פיננסי לזוגות צעירים ולמשפחות</span></div>
+</header>
+
+<section class="hero page">
+  <h1>כלים לסדר בכסף של הבית</h1>
+  <p>מחשבונים ומדריכים קצרים. בלי הרשמה, בחינם.</p>
+</section>
+
+<main class="page">
+  <div class="tools" id="tools"><div class="spinner"></div></div>
+</main>
+
+<footer class="page">
+  <p>האמור באתר לא מהווה ייעוץ. <a href="privacy.html">מדיניות פרטיות</a> · <a href="accessibility.html">הצהרת נגישות</a></p>
+</footer>
+
+<script>
+(function () {
+  const box = document.getElementById('tools');
+  // only tools marked <meta name="tool:public" content="true">
+  fetch('catalog.json', { cache: 'no-store' }).then(r => r.json()).then(c => {
+    const tools = c.tools.filter(t => t.public);
+    box.textContent = '';
+    if (!tools.length) { box.innerHTML = '<p class="center" style="color:var(--on-bg-dim)">בקרוב.</p>'; return; }
+    tools.forEach(t => {
+      const a = document.createElement('a');
+      a.className = 'card tool';
+      a.href = t.path;
+      a.innerHTML = '<div class="row"><div class="main"><small></small><h2></h2><p></p></div><span class="go-arrow" aria-hidden="true">‹</span></div>';
+      a.querySelector('small').textContent = t.type;
+      a.querySelector('h2').textContent = t.title;
+      a.querySelector('p').textContent = t.description;
+      box.append(a);
+    });
+  }).catch(() => { box.innerHTML = '<p class="center" style="color:var(--on-bg-dim)">משהו השתבש בטעינה. נסו לרענן.</p>'; });
+})();
+</script>
+</body>
+</html>
