@@ -56,8 +56,6 @@
   .ledger li.total{background:var(--surface-2)}
   .ledger li.total,.ledger li.total span{color:var(--ink);font-weight:600}
 
-  .fees{margin-top:12px;padding:14px 16px;border-radius:var(--r-lg);background:var(--warn-soft);color:var(--ink);font-size:.95rem}
-  .fees b{color:var(--warn)}
 
   /* chart */
   .chart-card{padding:16px}
@@ -137,9 +135,17 @@
       <div class="row">
         <label class="switch"><span><b>דמי ניהול</b><small>מוסיפים אם יודעים כמה משלמים</small></span><input type="checkbox" id="feeOn"></label>
         <div class="reveal" id="feeBox" hidden>
-          <label for="fee" class="sr">דמי ניהול שנתיים מהצבירה</label>
-          <div class="pct"><input class="field" id="fee" inputmode="decimal" autocomplete="off" aria-describedby="h-fee"></div>
-          <span class="hint" id="h-fee" style="margin:8px 0 0">האחוז השנתי שנגבה מהצבירה.</span>
+          <div class="pair">
+            <div>
+              <label for="fee" class="lbl">מהצבירה</label>
+              <div class="pct"><input class="field" id="fee" inputmode="decimal" autocomplete="off" aria-describedby="h-fee"></div>
+            </div>
+            <div>
+              <label for="feeDep" class="lbl">מההפקדה החודשית</label>
+              <div class="pct"><input class="field" id="feeDep" inputmode="decimal" autocomplete="off" aria-describedby="h-fee"></div>
+            </div>
+          </div>
+          <span class="hint" id="h-fee" style="margin:8px 0 0">מהצבירה: אחוז שנתי מכל הכסף שנצבר. מההפקדה: אחוז מכל הפקדה חודשית. אפשר למלא אחד מהם או את שניהם.</span>
         </div>
       </div>
       <div class="row">
@@ -175,7 +181,6 @@
       <p class="sub" id="figSub"></p>
       <ul class="ledger" id="ledger"></ul>
     </div>
-    <p class="fees" id="fees" hidden></p>
 
     <div class="card chart-card" style="margin-top:12px">
       <h2>איך הכסף גדל לאורך השנים</h2>
@@ -193,8 +198,8 @@
     <div class="assume">
       <b>מה החישוב מניח</b>
       <ul>
-        <li>ריבית דריבית חודשית לפי התשואה השנתית. ההפקדה החודשית בסוף כל חודש.</li>
-        <li id="feeAssume">דמי הניהול נגבים מדי חודש מהצבירה.</li>
+        <li>ריבית חודשית של התשואה השנתית חלקי 12, וההפקדה החודשית בסוף כל חודש. זו השיטה המקובלת, כמו ב-Excel וברוב המחשבונים.</li>
+        <li id="feeAssume"></li>
         <li id="taxAssume">המס מחושב על משיכה אחת בסוף התקופה.</li>
       </ul>
     </div>
@@ -228,24 +233,32 @@
     return {
       initial: int($('initial')), monthly: int($('monthly')),
       years: int($('years')), rate: dec($('rate')),
-      fee: $('feeOn').checked ? (dec($('fee')) || 0) : 0,
+      feeBal: $('feeOn').checked ? Math.max(0, dec($('fee')) || 0) : 0,
+      feeDep: $('feeOn').checked ? Math.max(0, dec($('feeDep')) || 0) : 0,
       tax, taxRate: dec($('taxRate')), infl: dec($('infl'))
     };
   }
 
   /* ---------- the math ---------- */
-  // month-by-month; returns the balance at the end of each year
-  function simulate(p, fee) {
-    const g = Math.pow(1 + p.rate / 100, 1 / 12) - 1;   // monthly return equal to the annual one
-    const m = fee / 100 / 12;                           // monthly share of the annual fee on the balance
-    let bal = p.initial, dep = p.initial;
+  // month-by-month, the common convention (Excel FV and most online calculators):
+  // monthly rate = annual / 12, deposit at the end of the month.
+  // Fees are only what is actually charged: a monthly share of the annual % on the balance,
+  // and a % of each monthly deposit. No "lost return" on top.
+  function simulate(p) {
+    const g = p.rate / 100 / 12;
+    const fBal = p.feeBal / 100 / 12;
+    const fDep = p.feeDep / 100;
+    let bal = p.initial, dep = p.initial, earned = 0, fees = 0;
     const years = [{ year: 0, value: bal, deposits: dep }];
     for (let k = 1; k <= p.years * 12; k++) {
-      bal = bal * (1 + g) * (1 - m) + p.monthly;
+      const interest = bal * g, fee = bal * fBal;
+      earned += interest;
+      fees += fee + p.monthly * fDep;
+      bal += interest - fee + p.monthly * (1 - fDep);
       dep += p.monthly;
       if (k % 12 === 0) years.push({ year: k / 12, value: bal, deposits: dep });
     }
-    return years;
+    return { years, earned, fees };
   }
 
   // deposits indexed to the end of the period, for real capital gains
@@ -257,16 +270,17 @@
   }
 
   function calc(p) {
-    const series = simulate(p, p.fee);
+    const sim = simulate(p);
+    const series = sim.years;
     const last = series[series.length - 1];
     const gross = last.value, deposits = last.deposits;
-    const gain = gross - deposits;
+    const gain = gross - deposits; // after fees
     let taxBase = 0;
     if (p.tax === 'nominal') taxBase = Math.max(0, gain);
     if (p.tax === 'real') taxBase = Math.max(0, Math.min(gain, gross - indexedDeposits(p))); // no tax on a real loss
     const tax = p.tax === 'none' ? 0 : taxBase * (p.taxRate / 100);
-    const feeCost = p.fee > 0 ? simulate(p, 0).pop().value - gross : 0;
-    return { series, gross, deposits, gain, tax, net: gross - tax, feeCost };
+    // deposits + earned - fees - tax = net
+    return { series, gross, deposits, gain, earned: sim.earned, fees: sim.fees, tax, net: gross - tax };
   }
 
   /* ---------- render ---------- */
@@ -297,7 +311,14 @@
     $('figure').textContent = money(r.net);
     $('figSub').textContent = r.deposits > 0 ? 'פי ' + (Math.round(r.net / r.deposits * 10) / 10).toLocaleString('he-IL') + ' מסך ההפקדות' : '';
 
-    const rows = [['סך ההפקדות', money(r.deposits)], [r.gain >= 0 ? 'רווח' : 'הפסד', money(r.gain)]];
+    const rows = [['סך ההפקדות', money(r.deposits)]];
+    if (r.fees > 0) {
+      rows.push(['תשואה שנצברה', money(r.earned)]);
+      rows.push(['דמי ניהול ששולמו', '−' + money(r.fees), 'minus']);
+      rows.push([r.gain >= 0 ? 'רווח נטו' : 'הפסד נטו', money(r.gain)]);
+    } else {
+      rows.push([r.gain >= 0 ? 'רווח' : 'הפסד', money(r.gain)]);
+    }
     if (p.tax !== 'none') rows.push(['מס רווחי הון (' + (p.tax === 'real' ? 'ריאלי' : 'נומינלי') + ')', '−' + money(r.tax), 'minus']);
     rows.push(['נשאר ביד', money(r.net), 'total']);
     const led = $('ledger');
@@ -311,16 +332,11 @@
       led.append(li);
     });
 
-    const fees = $('fees');
-    fees.hidden = !(r.feeCost > 0);
-    if (r.feeCost > 0) {
-      fees.textContent = '';
-      fees.append('דמי ניהול של ' + p.fee.toLocaleString('he-IL') + '% עולים לכם לאורך התקופה ');
-      const b = document.createElement('b'); b.textContent = money(r.feeCost); fees.append(b);
-      fees.append(', כולל התשואה שלא נצברה על הכסף הזה.');
-    }
-
-    $('feeAssume').hidden = !(p.fee > 0);
+    const feeParts = [];
+    if (p.feeBal > 0) feeParts.push(p.feeBal.toLocaleString('he-IL') + '% בשנה מהצבירה, נגבים מדי חודש');
+    if (p.feeDep > 0) feeParts.push(p.feeDep.toLocaleString('he-IL') + '% מכל הפקדה חודשית');
+    $('feeAssume').hidden = !feeParts.length;
+    $('feeAssume').textContent = 'דמי ניהול: ' + feeParts.join(', ו-') + '.';
     $('taxAssume').textContent = p.tax === 'none' ? 'בלי מס רווחי הון על המשיכה.' :
       p.tax === 'nominal' ? 'מס של ' + p.taxRate + '% על כל הרווח, במשיכה אחת בסוף התקופה.' :
       'מס של ' + p.taxRate + '% רק על הרווח מעל האינפלציה (' + p.infl + '% בשנה), במשיכה אחת בסוף התקופה. על הפסד ריאלי אין מס.';
