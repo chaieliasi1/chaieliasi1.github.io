@@ -198,7 +198,7 @@
     <div class="assume">
       <b>מה החישוב מניח</b>
       <ul>
-        <li>ריבית חודשית של התשואה השנתית חלקי 12, וההפקדה החודשית בסוף כל חודש. זו השיטה המקובלת, כמו ב-Excel וברוב המחשבונים.</li>
+        <li>ריבית חודשית של התשואה השנתית חלקי 12. ההפקדה החודשית בתחילת כל חודש, ודמי הניהול מהצבירה נגבים בסופו.</li>
         <li id="feeAssume"></li>
         <li id="taxAssume">המס מחושב על משיכה אחת בסוף התקופה.</li>
       </ul>
@@ -241,7 +241,8 @@
 
   /* ---------- the math ---------- */
   // month-by-month, the common convention (Excel FV and most online calculators):
-  // monthly rate = annual / 12, deposit at the end of the month.
+  // monthly rate = annual / 12, deposit at the start of the month, balance fee at the end of it
+  // (matches lazyinvestor.co.il with fees, checked 2026-10-08).
   // Fees are only what is actually charged: a monthly share of the annual % on the balance,
   // and a % of every deposit (initial and monthly). No "lost return" on top.
   function simulate(p) {
@@ -252,10 +253,14 @@
     let bal = p.initial * (1 - fDep), dep = p.initial, earned = 0, fees = p.initial * fDep;
     const years = [{ year: 0, value: bal, deposits: dep }];
     for (let k = 1; k <= p.years * 12; k++) {
-      const interest = bal * g, fee = bal * fBal;
+      // deposit at the start of the month, a month of return, then the balance fee
+      bal += p.monthly * (1 - fDep);
+      const interest = bal * g;
+      bal += interest;
+      const fee = bal * fBal;
+      bal -= fee;
       earned += interest;
       fees += fee + p.monthly * fDep;
-      bal += interest - fee + p.monthly * (1 - fDep);
       dep += p.monthly;
       if (k % 12 === 0) years.push({ year: k / 12, value: bal, deposits: dep });
     }
@@ -266,7 +271,7 @@
   function indexedDeposits(p) {
     const i = p.infl / 100, n = p.years * 12;
     let sum = p.initial * Math.pow(1 + i, p.years);
-    for (let k = 1; k <= n; k++) sum += p.monthly * Math.pow(1 + i, (n - k) / 12);
+    for (let k = 1; k <= n; k++) sum += p.monthly * Math.pow(1 + i, (n - k + 1) / 12); // deposited at the start of month k
     return sum;
   }
 
