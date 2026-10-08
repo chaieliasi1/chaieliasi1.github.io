@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מחשבון ריבית דריבית · חי אליאסי</title>
+<meta name="description" content="כמה יצטבר מהפקדה חד-פעמית והפקדה חודשית לאורך השנים, אחרי דמי ניהול ומס רווחי הון.">
+<meta name="tool:title" content="מחשבון ריבית דריבית">
+<meta name="tool:description" content="כמה יצטבר מהפקדה חד-פעמית וחודשית לאורך השנים, אחרי דמי ניהול ומס.">
+<meta name="tool:type" content="מחשבון">
+<meta name="tool:public" content="true">
+<meta name="tool:lead" content="false">
+<meta name="theme-color" content="#F4F2EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121611" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../admin/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../../shared/style.css">
+<style>
+  /* chart series: validated with dataviz validate_palette.js (light on #FFF, dark on #1A2018) */
+  :root{--s-value:#4E7A3A;--s-deposit:#B9893D}
+  @media (prefers-color-scheme:dark){:root{--s-value:#457A35;--s-deposit:#BC8B3A}}
+
+  .row label{display:block;font-weight:600;color:var(--ink);margin-bottom:2px}
+  .row .hint{margin:0 0 10px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .pct{position:relative}
+  .pct .field{padding-inline-end:36px}
+  .pct::after{content:"%";position:absolute;inset-inline-end:14px;top:50%;transform:translateY(-50%);color:var(--ink-2);pointer-events:none}
+  .unit-y{position:relative}
+  .unit-y .field{padding-inline-end:52px}
+  .unit-y::after{content:"שנים";position:absolute;inset-inline-end:14px;top:50%;transform:translateY(-50%);color:var(--ink-2);pointer-events:none;font-size:.9rem}
+  .field{font-size:1.1rem}
+
+  .switch{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;min-height:44px}
+  .switch b{font-weight:600}
+  .switch small{display:block;color:var(--ink-2);font-size:.85rem;font-weight:400}
+  .switch input{appearance:none;-webkit-appearance:none;flex:none;width:46px;height:28px;border-radius:999px;background:var(--line-strong);position:relative;cursor:pointer;transition:background var(--t);margin:0}
+  .switch input::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);transition:inset-inline-start var(--t)}
+  .switch input:checked{background:var(--primary)}
+  .switch input:checked::after{inset-inline-start:21px}
+  .reveal{margin-top:12px}
+
+  /* result */
+  .result{margin-top:28px}
+  .headline{padding:20px 16px 16px;border-top:4px solid var(--primary)}
+  .headline .tag{display:block;font-size:.85rem;font-weight:600;color:var(--ink-2)}
+  .figure{font-size:clamp(2.4rem,12vw,3.6rem);font-weight:600;line-height:1.1;letter-spacing:-.02em;color:var(--primary);margin:4px 0;overflow-wrap:anywhere}
+  .sub{color:var(--ink-2);font-size:.92rem}
+  .ledger{list-style:none;margin:16px 0 0;padding:0;border:1px solid var(--line);border-radius:10px}
+  .ledger li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px;font-size:.92rem;color:var(--ink-2)}
+  .ledger li + li{border-top:1px solid var(--line)}
+  .ledger li span{font-weight:600;color:var(--ink);white-space:nowrap}
+  .ledger li.minus span{color:var(--danger)}
+  .ledger li.total{background:var(--surface-2)}
+  .ledger li.total,.ledger li.total span{color:var(--ink);font-weight:600}
+
+  .fees{margin-top:12px;padding:14px 16px;border-radius:var(--r-lg);background:var(--warn-soft);color:var(--ink);font-size:.95rem}
+  .fees b{color:var(--warn)}
+
+  /* chart */
+  .chart-card{padding:16px}
+  .chart-card h2{font-size:1rem;font-weight:600}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 4px;font-size:.85rem;color:var(--ink-2)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:14px;height:3px;border-radius:2px;display:inline-block}
+  .chart{position:relative;direction:ltr;touch-action:pan-y}
+  .chart svg{display:block;width:100%;height:220px;overflow:visible}
+  .chart .grid line{stroke:var(--line);stroke-width:1}
+  .chart .axis text{fill:var(--ink-2);font-size:11px;font-family:inherit}
+  .chart .lbl-end{font-size:11px;font-weight:600;fill:var(--ink-2)}
+  .chart .cross{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+  .tip{position:absolute;top:0;pointer-events:none;direction:rtl;background:var(--ink);color:var(--bg);border-radius:8px;padding:8px 10px;font-size:.8rem;line-height:1.5;white-space:nowrap;transform:translateX(-50%)}
+  .tip b{font-weight:600}
+  .tip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-end:6px}
+
+  details.table{margin-top:12px}
+  details.table summary{cursor:pointer;font-weight:500;color:var(--primary);min-height:44px;display:flex;align-items:center}
+  .tbl{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:4px}
+  .tbl th,.tbl td{padding:8px 6px;text-align:start;border-bottom:1px solid var(--line);white-space:nowrap}
+  .tbl th{color:var(--ink-2);font-weight:500}
+  .tbl-wrap{overflow-x:auto}
+
+  .assume{margin-top:16px;font-size:.82rem;color:var(--ink-2)}
+  .assume li + li{margin-top:4px}
+  .assume ul{margin:6px 0 0;padding-inline-start:18px}
+  .empty-state{margin-top:28px;padding:20px 16px;text-align:center;color:var(--ink-2)}
+</style>
+</head>
+<body>
+<header class="mast page">
+  <div class="logo" aria-hidden="true"><img src="../../shared/mark.svg" alt="" width="27" height="18"></div>
+  <div class="name"><b>חי אליאסי</b><span>יועץ פיננסי לזוגות צעירים ולמשפחות</span></div>
+</header>
+
+<section class="hero page">
+  <span class="eyebrow">מחשבון ריבית דריבית</span>
+  <h1>כמה הכסף שלכם יכול לגדול?</h1>
+  <p>ממלאים כמה מפקידים, לכמה זמן ובאיזו תשואה, ורואים כמה יצטבר אחרי דמי ניהול ומס.</p>
+</section>
+
+<main class="page">
+  <form id="calc" novalidate aria-label="מחשבון ריבית דריבית">
+    <h2 class="grp">ההפקדות</h2>
+    <div class="card">
+      <div class="row">
+        <label for="initial">הפקדה ראשונית</label>
+        <span class="hint" id="h-initial">סכום חד-פעמי שמפקידים היום. אפשר להשאיר 0.</span>
+        <div class="money"><input class="field" id="initial" inputmode="numeric" autocomplete="off" placeholder="0" aria-describedby="h-initial"></div>
+      </div>
+      <div class="row">
+        <label for="monthly">הפקדה חודשית</label>
+        <span class="hint" id="h-monthly">כמה מוסיפים כל חודש. אפשר להשאיר 0.</span>
+        <div class="money"><input class="field" id="monthly" inputmode="numeric" autocomplete="off" placeholder="0" aria-describedby="h-monthly"></div>
+      </div>
+    </div>
+
+    <h2 class="grp">לכמה זמן ובאיזו תשואה</h2>
+    <div class="card">
+      <div class="row pair">
+        <div>
+          <label for="years">מספר שנים</label>
+          <div class="unit-y"><input class="field" id="years" inputmode="numeric" autocomplete="off" placeholder="10"></div>
+        </div>
+        <div>
+          <label for="rate">תשואה שנתית</label>
+          <div class="pct"><input class="field" id="rate" inputmode="decimal" autocomplete="off" placeholder="לדוגמה 5"></div>
+        </div>
+      </div>
+      <div class="row" style="padding-top:0;border-top:0">
+        <span class="hint" style="margin:0">תשואה ממוצעת שנתית לפני דמי ניהול. זו הנחה בלבד: תשואות משתנות משנה לשנה ואינן מובטחות.</span>
+      </div>
+    </div>
+
+    <h2 class="grp">עלויות</h2>
+    <div class="card">
+      <div class="row">
+        <label class="switch"><span><b>דמי ניהול</b><small>אחוז שנתי מהצבירה</small></span><input type="checkbox" id="feeOn"></label>
+        <div class="reveal" id="feeBox" hidden>
+          <label for="fee" class="sr">דמי ניהול שנתיים מהצבירה</label>
+          <div class="pct"><input class="field" id="fee" inputmode="decimal" autocomplete="off" placeholder="לדוגמה 0.7"></div>
+        </div>
+      </div>
+      <div class="row">
+        <span class="lbl" id="taxLbl">מס רווחי הון</span>
+        <div class="pills" role="radiogroup" aria-labelledby="taxLbl">
+          <label><input type="radio" name="tax" value="none" checked><span>בלי מס</span></label>
+          <label><input type="radio" name="tax" value="nominal"><span>נומינלי</span></label>
+          <label><input type="radio" name="tax" value="real"><span>ריאלי</span></label>
+        </div>
+        <span class="hint" id="taxHint" style="margin:10px 0 0">לחיסכון שפטור ממס, או כדי לראות את התמונה לפני מס.</span>
+        <div class="reveal pair" id="taxBox" hidden>
+          <div>
+            <label for="taxRate" class="lbl">שיעור המס</label>
+            <div class="pct"><input class="field" id="taxRate" inputmode="decimal" autocomplete="off" value="25"></div>
+          </div>
+          <div id="inflWrap" hidden>
+            <label for="infl" class="lbl">אינפלציה שנתית</label>
+            <div class="pct"><input class="field" id="infl" inputmode="decimal" autocomplete="off" value="2.5"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <p class="card empty-state" id="empty">ממלאים מספר שנים, תשואה והפקדה אחת לפחות, והתוצאה מופיעה כאן.</p>
+
+  <section class="result" id="result" hidden aria-live="polite">
+    <div class="card headline">
+      <span class="tag" id="tag">צפוי לעמוד לרשותכם</span>
+      <div class="figure" id="figure">0 ₪</div>
+      <p class="sub" id="figSub"></p>
+      <ul class="ledger" id="ledger"></ul>
+    </div>
+    <p class="fees" id="fees" hidden></p>
+
+    <div class="card chart-card" style="margin-top:12px">
+      <h2>איך הכסף גדל לאורך השנים</h2>
+      <div class="legend" aria-hidden="true">
+        <span><i style="background:var(--s-value)"></i>שווי הצבירה</span>
+        <span><i style="background:var(--s-deposit)"></i>סך ההפקדות</span>
+      </div>
+      <div class="chart" id="chart"></div>
+      <details class="table">
+        <summary>טבלה לפי שנים</summary>
+        <div class="tbl-wrap"><table class="tbl" id="tbl"></table></div>
+      </details>
+    </div>
+
+    <div class="assume">
+      <b>מה החישוב מניח</b>
+      <ul>
+        <li>ריבית דריבית חודשית לפי התשואה השנתית. ההפקדה החודשית בסוף כל חודש.</li>
+        <li id="feeAssume">דמי הניהול נגבים מדי חודש מהצבירה.</li>
+        <li id="taxAssume">המס מחושב על משיכה אחת בסוף התקופה.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="page">
+  <p>חישוב להמחשה בלבד. האמור לא מהווה ייעוץ השקעות או ייעוץ מס.<br>
+  <a href="../../privacy.html">מדיניות פרטיות</a> · <a href="../../accessibility.html">הצהרת נגישות</a></p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const nf = new Intl.NumberFormat('he-IL', { maximumFractionDigits: 0 });
+  const money = n => nf.format(Math.round(n)) + ' ₪';
+  const short = n => n >= 1e6 ? (Math.round(n / 1e5) / 10).toLocaleString('he-IL') + ' מיליון' : n >= 1000 ? nf.format(Math.round(n / 1000)) + ' אלף' : nf.format(n);
+
+  /* ---------- inputs ---------- */
+  const int = el => Number(String(el.value).replace(/[^\d]/g, '')) || 0;
+  const dec = el => { const v = parseFloat(String(el.value).replace(',', '.').replace(/[^\d.\-]/g, '')); return isFinite(v) ? v : NaN; };
+  ['initial', 'monthly'].forEach(id => $(id).addEventListener('input', e => {
+    const d = e.target.value.replace(/\D/g, '').slice(0, 9);
+    e.target.value = d ? Number(d).toLocaleString('he-IL') : '';
+  }));
+  $('years').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 2); });
+
+  function read() {
+    const tax = document.querySelector('[name=tax]:checked').value;
+    return {
+      initial: int($('initial')), monthly: int($('monthly')),
+      years: int($('years')), rate: dec($('rate')),
+      fee: $('feeOn').checked ? (dec($('fee')) || 0) : 0,
+      tax, taxRate: dec($('taxRate')), infl: dec($('infl'))
+    };
+  }
+
+  /* ---------- the math ---------- */
+  // month-by-month; returns the balance at the end of each year
+  function simulate(p, fee) {
+    const g = Math.pow(1 + p.rate / 100, 1 / 12) - 1;   // monthly return equal to the annual one
+    const m = fee / 100 / 12;                           // monthly share of the annual fee on the balance
+    let bal = p.initial, dep = p.initial;
+    const years = [{ year: 0, value: bal, deposits: dep }];
+    for (let k = 1; k <= p.years * 12; k++) {
+      bal = bal * (1 + g) * (1 - m) + p.monthly;
+      dep += p.monthly;
+      if (k % 12 === 0) years.push({ year: k / 12, value: bal, deposits: dep });
+    }
+    return years;
+  }
+
+  // deposits indexed to the end of the period, for real capital gains
+  function indexedDeposits(p) {
+    const i = p.infl / 100, n = p.years * 12;
+    let sum = p.initial * Math.pow(1 + i, p.years);
+    for (let k = 1; k <= n; k++) sum += p.monthly * Math.pow(1 + i, (n - k) / 12);
+    return sum;
+  }
+
+  function calc(p) {
+    const series = simulate(p, p.fee);
+    const last = series[series.length - 1];
+    const gross = last.value, deposits = last.deposits;
+    const gain = gross - deposits;
+    let taxBase = 0;
+    if (p.tax === 'nominal') taxBase = Math.max(0, gain);
+    if (p.tax === 'real') taxBase = Math.max(0, Math.min(gain, gross - indexedDeposits(p))); // no tax on a real loss
+    const tax = p.tax === 'none' ? 0 : taxBase * (p.taxRate / 100);
+    const feeCost = p.fee > 0 ? simulate(p, 0).pop().value - gross : 0;
+    return { series, gross, deposits, gain, tax, net: gross - tax, feeCost };
+  }
+
+  /* ---------- render ---------- */
+  function render() {
+    const p = read();
+    const ok = p.years >= 1 && p.years <= 60 && isFinite(p.rate) && p.rate > -50 && p.rate < 50 &&
+      (p.initial > 0 || p.monthly > 0) &&
+      (p.tax === 'none' || (isFinite(p.taxRate) && p.taxRate >= 0 && p.taxRate <= 100)) &&
+      (p.tax !== 'real' || isFinite(p.infl));
+    $('result').hidden = !ok;
+    $('empty').hidden = ok;
+    if (!ok) return;
+
+    const r = calc(p);
+    $('tag').textContent = 'צפוי לעמוד לרשותכם' + (p.tax !== 'none' ? ' אחרי מס' : '') + ' בעוד ' + p.years + ' שנים';
+    $('figure').textContent = money(r.net);
+    $('figSub').textContent = r.deposits > 0 ? 'פי ' + (Math.round(r.net / r.deposits * 10) / 10).toLocaleString('he-IL') + ' מסך ההפקדות' : '';
+
+    const rows = [['סך ההפקדות', money(r.deposits)], [r.gain >= 0 ? 'רווח' : 'הפסד', money(r.gain)]];
+    if (p.tax !== 'none') rows.push(['מס רווחי הון (' + (p.tax === 'real' ? 'ריאלי' : 'נומינלי') + ')', '−' + money(r.tax), 'minus']);
+    rows.push(['נשאר ביד', money(r.net), 'total']);
+    const led = $('ledger');
+    led.textContent = '';
+    rows.forEach(([k, v, cls]) => {
+      const li = document.createElement('li');
+      if (cls) li.className = cls;
+      li.append(k);
+      const s = document.createElement('span'); s.textContent = v; s.dir = 'ltr';
+      li.append(s);
+      led.append(li);
+    });
+
+    const fees = $('fees');
+    fees.hidden = !(r.feeCost > 0);
+    if (r.feeCost > 0) {
+      fees.textContent = '';
+      fees.append('דמי ניהול של ' + p.fee.toLocaleString('he-IL') + '% עולים לכם לאורך התקופה ');
+      const b = document.createElement('b'); b.textContent = money(r.feeCost); fees.append(b);
+      fees.append(', כולל התשואה שלא נצברה על הכסף הזה.');
+    }
+
+    $('feeAssume').hidden = !(p.fee > 0);
+    $('taxAssume').textContent = p.tax === 'none' ? 'בלי מס רווחי הון על המשיכה.' :
+      p.tax === 'nominal' ? 'מס של ' + p.taxRate + '% על כל הרווח, במשיכה אחת בסוף התקופה.' :
+      'מס של ' + p.taxRate + '% רק על הרווח מעל האינפלציה (' + p.infl + '% בשנה), במשיכה אחת בסוף התקופה. על הפסד ריאלי אין מס.';
+
+    drawChart(r.series);
+    drawTable(r.series);
+  }
+
+  function drawTable(series) {
+    const t = $('tbl');
+    t.innerHTML = '<thead><tr><th scope="col">שנה</th><th scope="col">סך ההפקדות</th><th scope="col">שווי הצבירה</th></tr></thead>';
+    const body = document.createElement('tbody');
+    series.slice(1).forEach(s => {
+      const tr = document.createElement('tr');
+      [s.year, money(s.deposits), money(s.value)].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.append(td); });
+      body.append(tr);
+    });
+    t.append(body);
+  }
+
+  /* ---------- chart: one ₪ axis, two lines, hover crosshair ---------- */
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.append(e); return e; };
+  let last = null;
+
+  function niceMax(v) {
+    const p = Math.pow(10, Math.floor(Math.log10(v || 1)));
+    for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * p >= v) return m * p;
+    return 10 * p;
+  }
+
+  function drawChart(series) {
+    last = series;
+    const box = $('chart');
+    box.textContent = '';
+    const W = Math.max(280, box.clientWidth), H = 220;
+    const pad = { l: 56, r: 64, t: 10, b: 24 };
+    const max = niceMax(Math.max(...series.map(s => Math.max(s.value, s.deposits))));
+    const n = series.length - 1;
+    const x = i => pad.l + (W - pad.l - pad.r) * (i / n);
+    const y = v => pad.t + (H - pad.t - pad.b) * (1 - v / max);
+    const svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'גרף: שווי הצבירה וסך ההפקדות לפי שנים. הנתונים המלאים בטבלה שמתחת.' }, box);
+
+    const grid = el('g', { class: 'grid' }, svg), axis = el('g', { class: 'axis' }, svg);
+    for (let k = 0; k <= 4; k++) {
+      const v = max * k / 4;
+      el('line', { x1: pad.l, x2: W - pad.r, y1: y(v), y2: y(v) }, grid);
+      // Hebrew label in an LTR chart: rtl direction, anchored at its right edge ("start" in rtl)
+      const t = el('text', { x: pad.l - 8, y: y(v) + 4, direction: 'rtl', 'text-anchor': 'start' }, axis);
+      t.textContent = k ? short(v) : '0';
+    }
+    const step = n <= 10 ? 1 : n <= 20 ? 5 : 10;
+    for (let i = 0; i <= n; i += step) {
+      const t = el('text', { x: x(i), y: H - 6, 'text-anchor': 'middle' }, axis);
+      t.textContent = i;
+    }
+    const path = key => series.map((s, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(s[key]).toFixed(1)).join(' ');
+    el('path', { d: path('value') + ' L' + x(n) + ' ' + y(0) + ' L' + x(0) + ' ' + y(0) + ' Z', fill: 'var(--s-value)', opacity: '.1' }, svg);
+    el('path', { d: path('deposits'), fill: 'none', stroke: 'var(--s-deposit)', 'stroke-width': 2, 'stroke-linejoin': 'round' }, svg);
+    el('path', { d: path('value'), fill: 'none', stroke: 'var(--s-value)', 'stroke-width': 2, 'stroke-linejoin': 'round' }, svg);
+
+    // direct labels at the line ends, nudged apart when close
+    const end = series[n];
+    let yv = y(end.value), yd = y(end.deposits);
+    if (Math.abs(yv - yd) < 14) { yv = Math.min(yv, yd) - 7; yd = yv + 14; }
+    [['שווי', yv], ['הפקדות', yd]].forEach(([txt, yy]) => {
+      const t = el('text', { x: x(n) + 8, y: yy + 4, class: 'lbl-end' }, svg);
+      t.textContent = txt;
+    });
+
+    // hover layer
+    const cross = el('line', { class: 'cross', y1: pad.t, y2: H - pad.b, visibility: 'hidden' }, svg);
+    const dv = el('circle', { r: 4.5, fill: 'var(--s-value)', stroke: 'var(--surface)', 'stroke-width': 2, visibility: 'hidden' }, svg);
+    const dd = el('circle', { r: 4.5, fill: 'var(--s-deposit)', stroke: 'var(--surface)', 'stroke-width': 2, visibility: 'hidden' }, svg);
+    const tip = document.createElement('div');
+    tip.className = 'tip'; tip.hidden = true;
+    box.append(tip);
+    const hit = el('rect', { x: pad.l, y: 0, width: W - pad.l - pad.r, height: H, fill: 'transparent' }, svg);
+    const show = ev => {
+      const rect = svg.getBoundingClientRect();
+      const px = (ev.clientX - rect.left) * (W / rect.width);
+      const i = Math.max(0, Math.min(n, Math.round((px - pad.l) / (W - pad.l - pad.r) * n)));
+      const s = series[i];
+      [cross, dv, dd].forEach(m => m.setAttribute('visibility', 'visible'));
+      cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i));
+      dv.setAttribute('cx', x(i)); dv.setAttribute('cy', y(s.value));
+      dd.setAttribute('cx', x(i)); dd.setAttribute('cy', y(s.deposits));
+      tip.innerHTML = '<b>שנה ' + s.year + '</b><br><i style="background:var(--s-value)"></i>שווי ' + money(s.value) + '<br><i style="background:var(--s-deposit)"></i>הפקדות ' + money(s.deposits);
+      tip.hidden = false;
+      const cx = x(i) * rect.width / W;
+      const half = tip.offsetWidth / 2;
+      tip.style.left = Math.max(half, Math.min(rect.width - half, cx)) + 'px';
+      tip.style.top = Math.max(0, y(s.value) * rect.height / H - tip.offsetHeight - 12) + 'px';
+    };
+    const hide = () => { [cross, dv, dd].forEach(m => m.setAttribute('visibility', 'hidden')); tip.hidden = true; };
+    hit.addEventListener('pointermove', show);
+    hit.addEventListener('pointerdown', show);
+    hit.addEventListener('pointerleave', hide);
+  }
+
+  if ('ResizeObserver' in window) {
+    let w = 0;
+    new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (nw !== w && last) { w = nw; drawChart(last); } }).observe($('chart'));
+  }
+
+  /* ---------- wiring ---------- */
+  function syncTax() {
+    const t = document.querySelector('[name=tax]:checked').value;
+    $('taxBox').hidden = t === 'none';
+    $('inflWrap').hidden = t !== 'real';
+    $('taxHint').textContent = t === 'none' ? 'לחיסכון שפטור ממס, או כדי לראות את התמונה לפני מס.' :
+      t === 'nominal' ? 'מס על כל הרווח, כולל החלק שרק מפצה על עליית המחירים.' :
+      'מס רק על הרווח שמעל האינפלציה. ההפקדות מוצמדות למדד עד המשיכה.';
+  }
+  $('feeOn').addEventListener('change', () => { $('feeBox').hidden = !$('feeOn').checked; if ($('feeOn').checked) $('fee').focus(); render(); });
+  document.querySelectorAll('[name=tax]').forEach(r => r.addEventListener('change', () => { syncTax(); render(); }));
+  $('calc').addEventListener('input', render);
+  $('calc').addEventListener('submit', e => e.preventDefault());
+  syncTax();
+  render();
+})();
+</script>
+</body>
+</html>
