@@ -6,62 +6,30 @@
 <title>הצהרת נגישות · חי אליאסי</title>
 <meta name="description" content="הצהרת הנגישות של מחשבון התזרים של חי אליאסי.">
 <meta name="robots" content="index,follow">
-<meta name="theme-color" content="#191920">
+<meta name="theme-color" content="#F4F2EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121611" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23F4F2EA'/><svg x='8' y='8' width='48' height='48' viewBox='378 108 762 504'><path d='M807.8 190.4A250 250 0 1 0 818.3 543.1L751.1 468.3A150 150 0 1 1 745.4 269.3Z' fill='%233E4F38'/><path d='M778 115H1130V221H818L850 182Z' fill='%23526845'/><path d='M807 306H1100V405H807Z' fill='%237F9172'/><path d='M810 494H1130V603H780L850 541Z' fill='%239EAE91'/></svg></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="shared/style.css">
 <style>
-  :root{
-    color-scheme:dark;
-    --bg:#191920; --on-bg:#ECECF0; --on-bg-dim:#9B9BA6; --hairline:rgba(255,255,255,.09);
-    --brand:#F97316; --brand-lo:#FBBF7A; --brand-deep:#C2410C;
-  }
-  *,*::before,*::after{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
-  body{
-    direction:rtl;margin:0;background:var(--bg);color:var(--on-bg);
-    font-family:"Rubik","Segoe UI",system-ui,sans-serif;
-    font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden;
-  }
-  h1,h2,p,ul{margin:0}
-  a{color:var(--brand-lo);font-weight:600}
-  :focus-visible{outline:3px solid var(--brand);outline-offset:3px;border-radius:6px}
-
-  .blobs{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-  .blobs i{position:absolute;display:block;border-radius:50%;filter:blur(90px);opacity:.11}
-  .blobs i:nth-child(1){width:44vmax;height:44vmax;background:var(--brand);top:-18vmax;inset-inline-start:-15vmax}
-  .blobs i:nth-child(2){width:34vmax;height:34vmax;background:#5E6AD2;bottom:-14vmax;inset-inline-end:-10vmax}
-
-  .page{max-width:38rem;margin-inline:auto;padding-inline:clamp(1.05rem,4.5vw,1.7rem)}
-
-  .mast{padding-block:1.4rem .4rem;display:flex;align-items:center;gap:.8rem}
-  .mast .name{display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap}
-  .logo{flex:none;width:46px;height:46px;border-radius:12px;background:#F4F2EA;display:grid;place-items:center}
-  .logo svg{display:block;width:32px;height:auto}
-  .mast b{font-weight:700;font-size:1.08rem;color:var(--on-bg);letter-spacing:-.01em}
-  .mast span{font-size:.85rem;color:var(--on-bg-dim);font-weight:400}
-  .back{display:inline-block;margin:.4rem 0 0;font-size:.92rem}
-
-  main{padding-block:2rem 3rem}
-  h1{font-weight:700;font-size:clamp(1.7rem,5vw,2.3rem);line-height:1.25;letter-spacing:-.01em;margin-bottom:.5rem}
-  .updated{color:var(--on-bg-dim);font-size:.9rem;margin-bottom:2rem}
-  h2{font-weight:700;font-size:1.2rem;margin:2.1rem 0 .7rem;letter-spacing:-.005em}
-  p + p{margin-top:.85rem}
-  section p, section ul{color:#D6D6DD}
-  ul{padding-inline-start:1.3rem;margin-top:.5rem}
-  li + li{margin-top:.45rem}
-  li::marker{color:var(--brand-lo)}
-  .box{margin-top:2.4rem;padding:1.2rem 1.3rem;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--hairline)}
-  .box p{color:var(--on-bg)}
-
-  footer{margin-top:3rem;padding-block:1.5rem 3rem;border-top:1px solid var(--hairline);color:var(--on-bg-dim);font-size:.85rem;line-height:1.7}
-  footer a{color:var(--on-bg-dim);text-decoration:underline}
+  /* עמודי טקסט משפטיים: הבסיס מ-shared/style.css */
+  body{line-height:1.75}
+  .back{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-size:.9rem;color:var(--ink-2);text-decoration:none}
+  .back::before{content:"";width:8px;height:8px;border:solid currentColor;border-width:0 1.75px 1.75px 0;transform:rotate(-45deg);margin-inline-end:8px}
+  main{padding-block:16px 24px}
+  h1{font-weight:600;font-size:clamp(1.6rem,5vw,2.1rem);line-height:1.25;letter-spacing:-.01em;margin-bottom:6px}
+  .updated{color:var(--ink-2);font-size:.88rem;margin-bottom:24px}
+  h2{font-weight:600;font-size:1.1rem;margin:28px 0 8px}
+  p + p{margin-top:10px}
+  ul{margin:8px 0 0;padding-inline-start:20px}
+  li + li{margin-top:6px}
+  li::marker{color:var(--ink-3)}
+  .box{margin-top:32px;padding:16px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line)}
 </style>
 </head>
 <body>
-
-<div class="blobs" aria-hidden="true"><i></i><i></i></div>
 
 <header class="mast page">
   <div class="logo" aria-hidden="true"><svg width="32" height="21" viewBox="378 108 762 504"><path d="M807.8 190.4A250 250 0 1 0 818.3 543.1L751.1 468.3A150 150 0 1 1 745.4 269.3Z" fill="#3E4F38"/><path d="M778 115H1130V221H818L850 182Z" fill="#526845"/><path d="M807 306H1100V405H807Z" fill="#7F9172"/><path d="M810 494H1130V603H780L850 541Z" fill="#9EAE91"/></svg></div>
@@ -72,7 +40,7 @@
 </header>
 
 <div class="page">
-  <a class="back" href="tools/cashflow/">← חזרה למחשבון</a>
+  <a class="back" href="tools/cashflow/">חזרה למחשבון</a>
 </div>
 
 <main class="page">
