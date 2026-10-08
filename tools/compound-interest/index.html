@@ -120,25 +120,26 @@
       <div class="row pair">
         <div>
           <label for="years">מספר שנים</label>
-          <div class="unit-y"><input class="field" id="years" inputmode="numeric" autocomplete="off" placeholder="10"></div>
+          <div class="unit-y"><input class="field" id="years" inputmode="numeric" autocomplete="off" aria-describedby="h-rate"></div>
         </div>
         <div>
           <label for="rate">תשואה שנתית</label>
-          <div class="pct"><input class="field" id="rate" inputmode="decimal" autocomplete="off" placeholder="לדוגמה 5"></div>
+          <div class="pct"><input class="field" id="rate" inputmode="decimal" autocomplete="off" aria-describedby="h-rate"></div>
         </div>
       </div>
       <div class="row" style="padding-top:0;border-top:0">
-        <span class="hint" style="margin:0">תשואה ממוצעת שנתית לפני דמי ניהול. זו הנחה בלבד: תשואות משתנות משנה לשנה ואינן מובטחות.</span>
+        <span class="hint" id="h-rate" style="margin:0">התשואה היא ממוצע שנתי לפני דמי ניהול, והיא הנחה בלבד: תשואות משתנות משנה לשנה ואינן מובטחות.</span>
       </div>
     </div>
 
     <h2 class="grp">עלויות</h2>
     <div class="card">
       <div class="row">
-        <label class="switch"><span><b>דמי ניהול</b><small>אחוז שנתי מהצבירה</small></span><input type="checkbox" id="feeOn"></label>
+        <label class="switch"><span><b>דמי ניהול</b><small>מוסיפים אם יודעים כמה משלמים</small></span><input type="checkbox" id="feeOn"></label>
         <div class="reveal" id="feeBox" hidden>
           <label for="fee" class="sr">דמי ניהול שנתיים מהצבירה</label>
-          <div class="pct"><input class="field" id="fee" inputmode="decimal" autocomplete="off" placeholder="לדוגמה 0.7"></div>
+          <div class="pct"><input class="field" id="fee" inputmode="decimal" autocomplete="off" aria-describedby="h-fee"></div>
+          <span class="hint" id="h-fee" style="margin:8px 0 0">האחוז השנתי שנגבה מהצבירה.</span>
         </div>
       </div>
       <div class="row">
@@ -161,9 +162,11 @@
         </div>
       </div>
     </div>
+    <button class="go" type="submit">חשב</button>
+    <p class="err" id="formErr" role="alert"></p>
   </form>
 
-  <p class="card empty-state" id="empty">ממלאים מספר שנים, תשואה והפקדה אחת לפחות, והתוצאה מופיעה כאן.</p>
+  <p class="card empty-state" id="empty" aria-live="polite">ממלאים מספר שנים, תשואה והפקדה אחת לפחות, והתוצאה מופיעה כאן.</p>
 
   <section class="result" id="result" hidden aria-live="polite">
     <div class="card headline">
@@ -267,15 +270,27 @@
   }
 
   /* ---------- render ---------- */
+  // what still has to be filled before there is a result
+  function missing(p) {
+    const m = [];
+    if (!(p.initial > 0 || p.monthly > 0)) m.push({ ids: ['initial', 'monthly'], text: 'הפקדה ראשונית או חודשית' });
+    if (!(p.years >= 1 && p.years <= 60)) m.push({ ids: ['years'], text: 'מספר שנים (1 עד 60)' });
+    if (!(isFinite(p.rate) && p.rate > -50 && p.rate < 50)) m.push({ ids: ['rate'], text: 'תשואה שנתית' });
+    if (p.tax !== 'none' && !(isFinite(p.taxRate) && p.taxRate >= 0 && p.taxRate <= 100)) m.push({ ids: ['taxRate'], text: 'שיעור המס' });
+    if (p.tax === 'real' && !isFinite(p.infl)) m.push({ ids: ['infl'], text: 'אינפלציה שנתית' });
+    return m;
+  }
+
   function render() {
     const p = read();
-    const ok = p.years >= 1 && p.years <= 60 && isFinite(p.rate) && p.rate > -50 && p.rate < 50 &&
-      (p.initial > 0 || p.monthly > 0) &&
-      (p.tax === 'none' || (isFinite(p.taxRate) && p.taxRate >= 0 && p.taxRate <= 100)) &&
-      (p.tax !== 'real' || isFinite(p.infl));
+    const miss = missing(p);
+    const ok = !miss.length;
     $('result').hidden = !ok;
     $('empty').hidden = ok;
-    if (!ok) return;
+    if (!ok) {
+      $('empty').textContent = 'כדי לראות תוצאה, חסר: ' + miss.map(x => x.text).join(', ') + '.';
+      return;
+    }
 
     const r = calc(p);
     $('tag').textContent = 'צפוי לעמוד לרשותכם' + (p.tax !== 'none' ? ' אחרי מס' : '') + ' בעוד ' + p.years + ' שנים';
@@ -423,7 +438,27 @@
   $('feeOn').addEventListener('change', () => { $('feeBox').hidden = !$('feeOn').checked; if ($('feeOn').checked) $('fee').focus(); render(); });
   document.querySelectorAll('[name=tax]').forEach(r => r.addEventListener('change', () => { syncTax(); render(); }));
   $('calc').addEventListener('input', render);
-  $('calc').addEventListener('submit', e => e.preventDefault());
+  // "חשב": on a phone the result sits below the fold and the keyboard hides it, so show what is missing or jump to it
+  $('calc').addEventListener('submit', e => {
+    e.preventDefault();
+    document.querySelectorAll('#calc [aria-invalid]').forEach(f => f.removeAttribute('aria-invalid'));
+    const miss = missing(read());
+    if (miss.length) {
+      miss.forEach(x => x.ids.forEach(id => $(id).setAttribute('aria-invalid', 'true')));
+      $('formErr').textContent = 'צריך למלא: ' + miss.map(x => x.text).join(', ') + '.';
+      $(miss[0].ids[0]).focus();
+      return;
+    }
+    $('formErr').textContent = '';
+    render();
+    if (document.activeElement) document.activeElement.blur(); // closes the phone keyboard
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('result').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  });
+  $('calc').addEventListener('input', e => {
+    if (e.target.getAttribute('aria-invalid')) e.target.removeAttribute('aria-invalid');
+    if (!document.querySelector('#calc [aria-invalid]')) $('formErr').textContent = '';
+  });
   syncTax();
   render();
 })();
