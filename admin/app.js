@@ -39,6 +39,8 @@
     return el;
   }
   const ICON = {
+    copy: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></svg>',
+    phone: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4Z"/></svg>',
     wa: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>'
   };
 
@@ -262,7 +264,7 @@
       chips.append(h('button', { type: 'button', 'data-f': k, onclick: () => { S.filter = k; draw(); } }, label + ' ' + n));
     });
     search.addEventListener('input', () => { S.q = search.value; draw(); });
-    view.append(search, chips, list, h('button', { class: 'fab', type: 'button', onclick: addPerson }, '+ הוספה'));
+    view.append(search, chips, list, h('button', { class: 'fab', type: 'button', onclick: addPerson }, 'הוספה'));
     draw();
   }
 
@@ -351,10 +353,10 @@
         h('div', { class: 'top' }, h('h1', {}, p.name), badge(p.stage)),
         h('p', { class: 'meta' }, sourceText(p), ' · נוסף ' + ago(p.created),
           p.referredBy ? [' · המליץ: ', ref ? h('a', { href: '#p=' + ref.id }, p.referredBy) : p.referredBy] : null),
-        p.phone ? h('div', { class: 'btns', style: 'margin-top:1rem' },
-          h('a', { class: 'ghost wa', href: waUrl(p.phone), target: '_blank', rel: 'noopener' }, 'וואטסאפ'),
-          h('a', { class: 'ghost', href: 'tel:' + p.phone }, 'חיוג'),
-          h('button', { class: 'ghost', type: 'button', onclick: () => copy(p.phone, 'הטלפון הועתק') }, p.phone)) : null),
+        p.phone ? h('button', { class: 'phone-copy', type: 'button', 'aria-label': 'העתקת הטלפון ' + p.phone, onclick: () => copy(p.phone, 'הטלפון הועתק'), html: '<span dir="ltr">' + p.phone.replace(/[<>&"]/g, '') + '</span>' + ICON.copy }) : null,
+        p.phone ? h('div', { class: 'btns', style: 'margin-top:14px' },
+          h('a', { class: 'ghost wa', href: waUrl(p.phone), target: '_blank', rel: 'noopener', html: ICON.wa + '<span>וואטסאפ</span>' }),
+          h('a', { class: 'ghost', href: 'tel:' + p.phone, html: ICON.phone + '<span>חיוג</span>' })) : null),
       h('div', { class: 'row' },
         h('label', { class: 'lbl', for: 'stage' }, 'שלב'),
         h('select', { class: 'field', id: 'stage', onchange: e => {
@@ -374,7 +376,7 @@
     const inProcess = ['sent', 'signed', 'active'].includes(p.stage);
     if (['signed', 'active', 'ended'].includes(p.stage)) {
       next.push(h('div', { class: 'row' },
-        h('h2', {}, p.stage === 'ended' ? 'הליווי הסתיים' : 'פגישה ' + Math.min(p.meetingsDone + 1, MEETINGS) + ' מתוך ' + MEETINGS),
+        h('h2', {}, p.stage === 'ended' ? 'הליווי הסתיים' : 'התקיימו ' + p.meetingsDone + ' מתוך ' + MEETINGS + ' פגישות'),
         h('div', { class: 'progress', 'aria-label': p.meetingsDone + ' מתוך ' + MEETINGS + ' פגישות התקיימו' },
           Array.from({ length: MEETINGS }, (_, i) => h('i', { class: i < p.meetingsDone ? 'on' : '' })))));
     }
@@ -601,10 +603,10 @@
         t.description ? h('p', {}, t.description) : null,
         h('div', { class: 'tags' },
           h('span', { class: 'badge' }, t.type),
-          t.lead ? h('span', { class: 'badge new' }, leads + ' לידים') : h('span', { class: 'badge' }, 'בלי טופס ליד'),
-          t.public ? h('span', { class: 'badge active' }, 'בספרייה') : h('span', { class: 'badge' }, 'לא בספרייה')),
+          t.lead ? h('span', { class: 'badge' }, leads + ' לידים') : h('span', { class: 'badge' }, 'בלי טופס ליד'),
+          t.public ? h('span', { class: 'badge contact' }, 'בספרייה') : h('span', { class: 'badge' }, 'לא בספרייה')),
         h('div', { class: 'btns' },
-          h('a', { class: 'ghost wa', href: 'https://wa.me/?text=' + encodeURIComponent(t.title + '\n' + url), target: '_blank', rel: 'noopener' }, 'שיתוף'),
+          h('a', { class: 'ghost wa', href: 'https://wa.me/?text=' + encodeURIComponent(t.title + '\n' + url), target: '_blank', rel: 'noopener', html: ICON.wa + '<span>שיתוף</span>' }),
           h('button', { class: 'ghost', type: 'button', onclick: () => copy(url, 'הקישור הועתק') }, 'העתקה'),
           h('button', { class: 'ghost', type: 'button', onclick: () => copy(url + '?src=ig', 'קישור לאינסטגרם הועתק') }, 'לאינסטגרם'),
           h('a', { class: 'ghost', href: url, target: '_blank', rel: 'noopener' }, 'פתיחה')))));
