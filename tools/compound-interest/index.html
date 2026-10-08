@@ -141,11 +141,11 @@
               <div class="pct"><input class="field" id="fee" inputmode="decimal" autocomplete="off" aria-describedby="h-fee"></div>
             </div>
             <div>
-              <label for="feeDep" class="lbl">מההפקדה החודשית</label>
+              <label for="feeDep" class="lbl">מההפקדות</label>
               <div class="pct"><input class="field" id="feeDep" inputmode="decimal" autocomplete="off" aria-describedby="h-fee"></div>
             </div>
           </div>
-          <span class="hint" id="h-fee" style="margin:8px 0 0">מהצבירה: אחוז שנתי מכל הכסף שנצבר. מההפקדה: אחוז מכל הפקדה חודשית. אפשר למלא אחד מהם או את שניהם.</span>
+          <span class="hint" id="h-fee" style="margin:8px 0 0">מהצבירה: אחוז שנתי מכל הכסף שנצבר. מההפקדות: אחוז מכל הפקדה, גם הראשונית וגם החודשית. אפשר למלא אחד מהם או את שניהם.</span>
         </div>
       </div>
       <div class="row">
@@ -243,12 +243,13 @@
   // month-by-month, the common convention (Excel FV and most online calculators):
   // monthly rate = annual / 12, deposit at the end of the month.
   // Fees are only what is actually charged: a monthly share of the annual % on the balance,
-  // and a % of each monthly deposit. No "lost return" on top.
+  // and a % of every deposit (initial and monthly). No "lost return" on top.
   function simulate(p) {
     const g = p.rate / 100 / 12;
     const fBal = p.feeBal / 100 / 12;
     const fDep = p.feeDep / 100;
-    let bal = p.initial, dep = p.initial, earned = 0, fees = 0;
+    // the deposit fee also applies to the initial deposit
+    let bal = p.initial * (1 - fDep), dep = p.initial, earned = 0, fees = p.initial * fDep;
     const years = [{ year: 0, value: bal, deposits: dep }];
     for (let k = 1; k <= p.years * 12; k++) {
       const interest = bal * g, fee = bal * fBal;
@@ -334,7 +335,7 @@
 
     const feeParts = [];
     if (p.feeBal > 0) feeParts.push(p.feeBal.toLocaleString('he-IL') + '% בשנה מהצבירה, נגבים מדי חודש');
-    if (p.feeDep > 0) feeParts.push(p.feeDep.toLocaleString('he-IL') + '% מכל הפקדה חודשית');
+    if (p.feeDep > 0) feeParts.push(p.feeDep.toLocaleString('he-IL') + '% מכל הפקדה (ראשונית וחודשית)');
     $('feeAssume').hidden = !feeParts.length;
     $('feeAssume').textContent = 'דמי ניהול: ' + feeParts.join(', ו-') + '.';
     $('taxAssume').textContent = p.tax === 'none' ? 'בלי מס רווחי הון על המשיכה.' :
