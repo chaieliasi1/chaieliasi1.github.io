@@ -1,4 +1,4 @@
-/* מערכת הניהול: היום, אנשים, כרטיס, כלים, מספרים. מדברת עם Crm.gs דרך shared/api.js. */
+/* מערכת הניהול: היום, לקוחות, כרטיס, כלים, מספרים. מדברת עם Crm.gs דרך shared/api.js. */
 (function () {
   'use strict';
 
@@ -75,7 +75,8 @@
   const intlPhone = p => { const d = String(p || '').replace(/\D/g, ''); return d.startsWith('0') ? '972' + d.slice(1) : d; };
   const waUrl = (phone, text) => 'https://wa.me/' + intlPhone(phone) + (text ? '?text=' + encodeURIComponent(text) : '');
   const firstName = name => String(name).split(/\s+ו?/)[0];
-  const onboardText = (name, url) => 'היי ' + firstName(name) + ', כאן חי 🙂\nלפני שיוצאים לדרך, הנה ההסכמות לחתימה ושאלון קצר לפני הפגישה הראשונה:\n' + url;
+  const onboardText = (name, url, gender) => 'היי ' + firstName(name) + ', כאן חי 🙂\nלפני שיוצאים לדרך, הנה ההסכמות לחתימה ושאלון קצר לפני הפגישה הראשונה. בסוף מחכה ' +
+    (gender === 'm' || gender === 'f' ? 'לך' : 'לכם') + ' גם רשימת המסמכים שכדאי להכין לפגישה:\n' + url;
 
   /* ---------- feedback ---------- */
   let toastTimer;
@@ -242,7 +243,7 @@
 
   /* ---------- people ---------- */
   function renderPeople() {
-    view.append(h('div', { class: 'head' }, h('h1', {}, 'אנשים'), h('small', {}, S.people.length + ' בסך הכל')));
+    view.append(h('div', { class: 'head' }, h('h1', {}, 'לקוחות'), h('small', {}, S.people.length + ' בסך הכל')));
     const search = h('input', { class: 'field search', type: 'search', placeholder: 'חיפוש לפי שם או טלפון', value: S.q, 'aria-label': 'חיפוש' });
     const chips = h('div', { class: 'chips', role: 'group', 'aria-label': 'סינון לפי שלב' });
     const list = h('div');
@@ -370,6 +371,19 @@
         } }, STAGES.map(([k, l]) => h('option', { value: k, selected: k === p.stage }, l))),
         p.stage === 'lost' && p.lostReason ? h('p', { class: 'hint', style: 'margin-top:.5rem' }, 'סיבה: ' + p.lostReason) : null)));
 
+    /* contract + questionnaire: first thing on the card while there's something to send */
+    if (['new', 'contact', 'intro'].includes(p.stage)) {
+      view.append(sec('חוזה ושאלון'), card(onboardRow(p, act)));
+    } else if (p.stage === 'sent' && p.onboardingUrl) {
+      view.append(sec('חוזה ושאלון'), card(h('div', { class: 'row' },
+        h('h2', {}, 'החוזה והשאלון נשלחו'),
+        h('p', { class: 'hint' }, 'מחכה לחתימה. ברגע שימלאו, הכרטיס יעבור לבד ל"חתם".'),
+        h('div', { class: 'linkbox' }, p.onboardingUrl),
+        h('div', { class: 'btns' },
+          h('a', { class: 'ghost wa', href: waUrl(p.phone, onboardText(p.name, p.onboardingUrl, p.gender)), target: '_blank', rel: 'noopener' }, 'שליחה שוב'),
+          h('button', { class: 'ghost', type: 'button', onclick: () => copy(p.onboardingUrl, 'הקישור הועתק') }, 'העתקה')))));
+    }
+
     /* the next step */
     const next = [];
     // from "contract sent" on, a new meeting is one of the four (same rule as Crm.gs)
@@ -396,18 +410,6 @@
         h('h2', {}, inProcess ? 'קביעת הפגישה הבאה' : 'קביעת שיחת היכרות'),
         h('p', { class: 'hint' }, 'נכנס ליומן גוגל שלך עם תזכורת שעה לפני.'),
         h('button', { class: 'ghost', type: 'button', style: 'width:100%;padding-block:.75rem', onclick: () => scheduleSheet(p, act, inProcess) }, 'בחירת מועד')));
-    }
-    if (['new', 'contact', 'intro'].includes(p.stage)) {
-      next.push(onboardRow(p, act));
-    }
-    if (p.stage === 'sent' && p.onboardingUrl) {
-      next.push(h('div', { class: 'row' },
-        h('h2', {}, 'החוזה והשאלון נשלחו'),
-        h('p', { class: 'hint' }, 'מחכה לחתימה. ברגע שימלאו, הכרטיס יעבור לבד ל"חתם".'),
-        h('div', { class: 'linkbox' }, p.onboardingUrl),
-        h('div', { class: 'btns' },
-          h('a', { class: 'ghost wa', href: waUrl(p.phone, onboardText(p.name, p.onboardingUrl)), target: '_blank', rel: 'noopener' }, 'שליחה שוב'),
-          h('button', { class: 'ghost', type: 'button', onclick: () => copy(p.onboardingUrl, 'הקישור הועתק') }, 'העתקה'))));
     }
     if (p.followupAt && p.stage === 'ended') {
       const due = new Date(p.followupAt) <= Date.now();
@@ -476,7 +478,7 @@
       if (!(sum > 0) || !g) { err.textContent = 'צריך סכום ופנייה (זוג / זכר / נקבה).'; return; }
       act(go, 'crm_onboard', { amount: sum, gender: g.value }, r => {
         toast('הקישור מוכן');
-        if (p.phone) window.open(waUrl(p.phone, onboardText(p.name, r.url)), '_blank');
+        if (p.phone) window.open(waUrl(p.phone, onboardText(p.name, r.url, g.value)), '_blank');
       });
     } },
       h('h2', {}, 'סגרנו? שליחת חוזה ושאלון'),
