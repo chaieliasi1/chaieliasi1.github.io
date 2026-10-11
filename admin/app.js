@@ -371,19 +371,6 @@
         } }, STAGES.map(([k, l]) => h('option', { value: k, selected: k === p.stage }, l))),
         p.stage === 'lost' && p.lostReason ? h('p', { class: 'hint', style: 'margin-top:.5rem' }, 'סיבה: ' + p.lostReason) : null)));
 
-    /* contract + questionnaire: first thing on the card while there's something to send */
-    if (['new', 'contact', 'intro'].includes(p.stage)) {
-      view.append(sec('חוזה ושאלון'), card(onboardRow(p, act)));
-    } else if (p.stage === 'sent' && p.onboardingUrl) {
-      view.append(sec('חוזה ושאלון'), card(h('div', { class: 'row' },
-        h('h2', {}, 'החוזה והשאלון נשלחו'),
-        h('p', { class: 'hint' }, 'מחכה לחתימה. ברגע שימלאו, הכרטיס יעבור לבד ל"חתם".'),
-        h('div', { class: 'linkbox' }, p.onboardingUrl),
-        h('div', { class: 'btns' },
-          h('a', { class: 'ghost wa', href: waUrl(p.phone, onboardText(p.name, p.onboardingUrl, p.gender)), target: '_blank', rel: 'noopener' }, 'שליחה שוב'),
-          h('button', { class: 'ghost', type: 'button', onclick: () => copy(p.onboardingUrl, 'הקישור הועתק') }, 'העתקה')))));
-    }
-
     /* the next step */
     const next = [];
     // from "contract sent" on, a new meeting is one of the four (same rule as Crm.gs)
@@ -419,6 +406,19 @@
         h('button', { class: 'ghost', type: 'button', style: 'width:100%;padding-block:.75rem', onclick: () => followupSheet(p, act) }, 'סימון שבוצע')));
     }
     if (next.length) view.append(sec('הצעד הבא'), card(next));
+
+    /* contract + questionnaire: right after the next step (intro call), while there's something to send */
+    if (['new', 'contact', 'intro'].includes(p.stage)) {
+      view.append(sec('חוזה ושאלון'), card(onboardRow(p, act)));
+    } else if (p.stage === 'sent' && p.onboardingUrl) {
+      view.append(sec('חוזה ושאלון'), card(h('div', { class: 'row' },
+        h('h2', {}, 'החוזה והשאלון נשלחו'),
+        h('p', { class: 'hint' }, 'מחכה לחתימה. ברגע שימלאו, הכרטיס יעבור לבד ל"חתם".'),
+        h('div', { class: 'linkbox' }, p.onboardingUrl),
+        h('div', { class: 'btns' },
+          h('a', { class: 'ghost wa', href: waUrl(p.phone, onboardText(p.name, p.onboardingUrl, p.gender)), target: '_blank', rel: 'noopener' }, 'שליחה שוב'),
+          h('button', { class: 'ghost', type: 'button', onclick: () => copy(p.onboardingUrl, 'הקישור הועתק') }, 'העתקה')))));
+    }
 
     /* money */
     if (p.amount > 0 || CLIENT.includes(p.stage) || p.paid) {
