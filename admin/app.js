@@ -420,6 +420,14 @@
           h('button', { class: 'ghost', type: 'button', onclick: () => copy(p.onboardingUrl, 'הקישור הועתק') }, 'העתקה')))));
     }
 
+    /* the financial plan is a separate system (plan/): only a link, with the name and phone filled in */
+    if (CLIENT.includes(p.stage)) {
+      const q = new URLSearchParams({ admin: '', new: p.name, phone: p.phone || '' });
+      view.append(sec('תוכנית כלכלית'), card(h('div', { class: 'row' },
+        h('p', { class: 'hint' }, 'נפתח במערכת התוכניות. אם כבר יש ללקוח תוכנית, היא ברשימה שם.'),
+        h('a', { class: 'ghost', style: 'width:100%;padding-block:.75rem', href: SITE + 'plan/?' + (Api.MOCK ? 'mock&' : '') + q.toString().replace('admin=&', 'admin&') }, 'למערכת התוכניות'))));
+    }
+
     /* money */
     if (p.amount > 0 || CLIENT.includes(p.stage) || p.paid) {
       const left = p.amount - p.paid;
