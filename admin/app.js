@@ -599,7 +599,7 @@
   /* ---------- tools ---------- */
   async function renderTools() {
     view.append(h('div', { class: 'head' }, h('h1', {}, 'כלים'), h('small', {}, 'מתעדכן לבד מכל כלי חדש')));
-    const box = h('div', {}, h('div', { class: 'spinner' }));
+    const box = h('div', { class: 'tool-grid' }, h('div', { class: 'spinner' }));
     view.append(box);
     const tools = await loadCatalog();
     box.textContent = '';

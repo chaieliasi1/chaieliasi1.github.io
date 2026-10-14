@@ -214,3 +214,42 @@ details.more[open] > summary{margin-bottom:12px}
 .phone-copy:active{background:var(--surface-2)}
 .phone-copy svg{width:16px;height:16px;color:var(--ink-3)}
 .btns .ghost{flex:1 1 0}
+
+/* מחשב: מצביע עכבר מקבל ריחוף, מסך רחב מקבל תפריט צד במקום הסרגל התחתון.
+   הכל כאן, אז גם התוכנית הכלכלית (שטוענת את הקובץ הזה) מקבלת את אותו מבנה. */
+@media (hover:hover){
+  a.item:hover,button.item:hover,a.tile:hover,.add:hover{background:var(--surface-2)}
+  .ghost:hover,.icon-btn:hover,.go-mini:hover{background:var(--surface-2);border-color:var(--ink-3)}
+  .go:hover,.fab:hover{background:var(--primary-press)}
+  .chips button:not([aria-pressed="true"]):hover{border-color:var(--ink-3);color:var(--ink)}
+  .tabs a:not([aria-current="page"]):hover{color:var(--ink)}
+  .tabs a:not([aria-current="page"]):hover i{background:var(--surface-2)}
+  .back:hover{color:var(--ink)}
+}
+@media (min-width:1024px){
+  :root{--rail:15rem}
+  body{padding-bottom:4rem}
+  body:has(#tabs:not([hidden])){padding-inline-start:var(--rail)}
+  .page{max-width:56rem;padding-inline:32px}
+  .mast{margin-inline:-32px;padding-inline:32px}
+  .tabs{
+    inset:0 0 0 auto;width:var(--rail);flex-direction:column;justify-content:flex-start;gap:4px;
+    padding:76px 12px 24px;border-top:0;border-inline-end:1px solid var(--line);background:var(--surface);
+  }
+  .tabs a{flex:none;max-width:none;min-height:44px;flex-direction:row;justify-content:flex-start;gap:12px;padding-inline:4px;font-size:.95rem;border-radius:10px}
+  .tabs a i{width:40px;height:36px;border-radius:10px}
+  .head{margin-top:32px}
+  .head h1{font-size:1.9rem}
+  .fab{inset-inline-start:calc(var(--rail) + max(0px, (100vw - var(--rail) - 56rem) / 2) + 32px);bottom:28px}
+  .toast{bottom:28px}
+  .chips{margin-inline:0;padding-inline:0;flex-wrap:wrap}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+  .tile:nth-child(n){border-top:0;border-inline-start:0}
+  .tile + .tile{border-inline-start:1px solid var(--line)}
+  .tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  .tool-grid .spinner,.tool-grid > .card:only-child:not(.tool){grid-column:1/-1}
+  .tool + .tool{margin-top:0}
+  .bars{height:200px}
+  .ybars{height:220px}
+  .login,#gate{max-width:26rem;margin-inline:auto}
+}
