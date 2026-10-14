@@ -1,0 +1,110 @@
+/* מראה המחשבונים הציבוריים: לילה, ירוק וזהב (חי בחר 2026-10-14, "שילוב א וב, כהה").
+   נטען אחרי shared/style.css ורק בכלים שב-tools/. מערכת הניהול והתוכנית לא טוענות אותו.
+   תמיד כהה, בלי תלות בהגדרת המכשיר. */
+
+:root{
+  color-scheme:dark;
+  --bg:#0A1610;
+  --surface:#0F1D16;
+  --surface-2:#16271E;
+  --line:#22372B;
+  --line-strong:#3A5043;
+  --ink:#F2ECDC;
+  --ink-2:#C2B89C;
+  --ink-3:#8C8466;
+  --placeholder:#8F8A72;
+  --primary:#E9C766;
+  --primary-press:#F3D57E;
+  --on-primary:#0A1610;
+  --primary-soft:rgba(233,199,102,.12);
+  --accent:#E9C766;
+  --sage:#5FA37A;
+  --emerald:#3E7A57;
+  --warn:#F0C674;
+  --warn-soft:rgba(240,198,116,.12);
+  --danger:#F29C8C;
+  --danger-soft:rgba(242,156,140,.12);
+  --wa:#5FCB8C;
+  --gold-grad:linear-gradient(135deg,#F3D57E,#B8892C);
+  --serif:"Frank Ruhl Libre",Georgia,serif;
+}
+
+body{position:relative;isolation:isolate}
+/* two slow glows behind everything */
+body::before,body::after{
+  content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(80px);pointer-events:none;
+  animation:luxe-drift 11s ease-in-out infinite alternate;
+}
+body::before{width:420px;height:420px;top:-140px;right:-120px;background:#1F5A3E;opacity:.55}
+body::after{width:380px;height:380px;bottom:-160px;left:-140px;background:#8C6A1E;opacity:.4;animation-delay:-5s}
+@keyframes luxe-drift{to{transform:translate(50px,60px) scale(1.15)}}
+
+.mast{border-bottom-color:rgba(233,199,102,.14)}
+.mast span{color:var(--ink-2)}
+
+/* hero */
+.hero{position:relative}
+.hero h1{font-family:var(--serif);font-weight:900;letter-spacing:0;line-height:1.12;font-size:clamp(2rem,8vw,2.7rem)}
+.hero h1 em{
+  font-style:normal;background:linear-gradient(90deg,#F3D57E,#B8892C,#F3D57E);background-size:200%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:luxe-shine 4s linear infinite;
+}
+@keyframes luxe-shine{to{background-position:-200%}}
+.eyebrow{color:var(--primary)}
+
+/* floating gold coins, sit at the left of the hero and the text wraps around them */
+.coins{float:left;position:relative;width:96px;height:92px;margin:4px 0 8px 12px}
+.coins i{
+  position:absolute;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#F6E2A6,#C9A24B 60%,#8C6519);border:2px solid #B88A2C;
+  box-shadow:0 8px 22px -6px rgba(201,162,75,.6);animation:luxe-float 4s ease-in-out infinite;
+}
+.coins i::after{content:"₪";position:absolute;inset:0;display:grid;place-items:center;color:#6E4F12;font:700 1rem var(--serif)}
+.coins i:nth-child(1){width:56px;height:56px;left:34px;top:0}
+.coins i:nth-child(1)::after{font-size:1.35rem}
+.coins i:nth-child(2){width:40px;height:40px;left:8px;top:44px;animation-delay:-1.4s}
+.coins i:nth-child(3){width:28px;height:28px;left:62px;top:60px;animation-delay:-2.6s}
+.coins i:nth-child(3)::after{font-size:.75rem}
+/* the growth version: three coins from small to big */
+.coins.grow i:nth-child(1){width:28px;height:28px;left:0;top:58px}
+.coins.grow i:nth-child(1)::after{font-size:.75rem}
+.coins.grow i:nth-child(2){width:40px;height:40px;left:22px;top:34px}
+.coins.grow i:nth-child(3){width:54px;height:54px;left:44px;top:2px}
+.coins.grow i:nth-child(3)::after{font-size:1.3rem}
+@keyframes luxe-float{50%{transform:translateY(-10px) rotate(8deg)}}
+
+/* glass surfaces */
+.card{background:rgba(255,255,255,.045);border-color:rgba(233,199,102,.22);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.row + .row{border-top-color:rgba(233,199,102,.12)}
+.grp,.sec{color:var(--ink-2)}
+.field,.amount input,.lead input,.lead textarea{background:rgba(0,0,0,.28);border-color:var(--line-strong)}
+.field:focus,.amount input:focus,.lead input:focus,.lead textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(233,199,102,.18)}
+
+/* the big number */
+.figure{font-family:var(--serif);font-weight:700;letter-spacing:0;color:#F6E9C4;text-shadow:0 0 34px rgba(243,213,126,.35)}
+
+/* gold button with a moving sheen */
+.go{position:relative;overflow:hidden;background:var(--gold-grad);color:var(--on-primary);font-size:1.08rem;box-shadow:0 12px 30px -12px rgba(233,199,102,.65);transition:transform var(--t),box-shadow var(--t)}
+.go::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.45),transparent 70%);
+  transform:translateX(100%);animation:luxe-sweep 3.2s ease-in-out infinite;
+}
+@keyframes luxe-sweep{to{transform:translateX(-100%)}}
+.go:active{background:var(--gold-grad);transform:scale(.99)}
+@media (hover:hover){.go:hover{box-shadow:0 14px 36px -10px rgba(233,199,102,.8)}}
+
+.pills span{background:rgba(0,0,0,.28)}
+.pills input:checked + span{background:var(--gold-grad);border-color:#C9A24B}
+
+footer{border-top-color:rgba(233,199,102,.14)}
+footer,footer a{color:var(--ink-3)}
+
+/* grow-in for result graphics; the page adds .anim only when "חשב" is pressed */
+@keyframes luxe-rise{from{transform:scaleY(0)}}
+@keyframes luxe-fade{from{opacity:0}}
+@keyframes luxe-draw{from{stroke-dashoffset:1}}
+
+@media (prefers-reduced-motion:reduce){
+  body::before,body::after,.go::after,.coins i::after{animation:none !important}
+}

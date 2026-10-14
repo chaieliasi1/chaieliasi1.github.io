@@ -11,20 +11,30 @@
 <meta name="tool:type" content="מחשבון">
 <meta name="tool:public" content="true">
 <meta name="tool:lead" content="true">
-<meta name="theme-color" content="#F4F2EA" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#121611" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0A1610">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23F4F2EA'/><svg x='8' y='8' width='48' height='48' viewBox='378 108 762 504'><path d='M807.8 190.4A250 250 0 1 0 818.3 543.1L751.1 468.3A150 150 0 1 1 745.4 269.3Z' fill='%233E4F38'/><path d='M778 115H1130V221H818L850 182Z' fill='%23526845'/><path d='M807 306H1100V405H807Z' fill='%237F9172'/><path d='M810 494H1130V603H780L850 541Z' fill='%239EAE91'/></svg></svg>">
 <meta property="og:title" content="כמה כסף באמת נשאר לכם בסוף החודש?">
 <meta property="og:description" content="ממלאים כמה נכנס וכמה יוצא ומקבלים אומדן ראשוני למצב. שתי דקות, בלי הרשמה.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&family=Frank+Ruhl+Libre:wght@700;900&display=swap">
 <link rel="stylesheet" href="../../shared/style.css">
+<link rel="stylesheet" href="../../shared/luxe.css">
 <style>
-  /* המחשבון: הבסיס מ-shared/style.css, כאן רק מה שייחודי לו */
+  /* המחשבון: הבסיס מ-shared/style.css והמראה מ-shared/luxe.css, כאן רק מה שייחודי לו */
   .hero{padding-block:28px 4px}
-  .hero .illo{display:block;width:72px;height:auto;margin-bottom:16px}
+
+  /* in and out, as bars: income in emerald, the three expenses in gold */
+  .flow{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:18px}
+  .flow div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;min-width:0}
+  .flow i{display:block;width:100%;max-width:64px;min-height:3px;border-radius:8px 8px 3px 3px;background:linear-gradient(#E9C766,#7A5A16);transform-origin:bottom}
+  .flow div:first-child i{background:linear-gradient(#6FD39A,#1F5A3E)}
+  .flow small{font-size:.75rem;color:var(--ink-2);white-space:nowrap}
+  .flow.anim i{animation:luxe-rise 1.2s cubic-bezier(.2,.9,.2,1.1) both}
+  .flow.anim div:nth-child(2) i{animation-delay:.1s}
+  .flow.anim div:nth-child(3) i{animation-delay:.2s}
+  .flow.anim div:nth-child(4) i{animation-delay:.3s}
 
   .grp{font-size:.85rem;color:var(--ink)}
   .chip{width:24px;height:24px;flex:none;border-radius:6px;display:grid;place-items:center;font-size:1rem;font-weight:600;line-height:1}
@@ -50,23 +60,23 @@
 
   /* verdict */
   .verdict{margin-top:32px}
-  #verdictCard{padding:20px 16px 16px;border-top-width:4px}
-  .verdict[data-sign="pos"] #verdictCard{border-top-color:var(--primary)}
-  .verdict[data-sign="neg"] #verdictCard,.verdict[data-sign="zero"] #verdictCard{border-top-color:var(--danger)}
+  /* the result speaks in one color: green when money is left, red when it is short or zero */
+  .verdict{--tone:#4ADE80;--tone-glow:rgba(74,222,128,.4);--tone-soft:rgba(74,222,128,.1);--tone-line:rgba(74,222,128,.45)}
+  .verdict[data-sign="neg"],.verdict[data-sign="zero"]{--tone:#FF6B5B;--tone-glow:rgba(255,107,91,.42);--tone-soft:rgba(255,107,91,.1);--tone-line:rgba(255,107,91,.5)}
+  #verdictCard{padding:20px 16px 16px;border-top-width:4px;border-color:var(--tone-line);border-top-color:var(--tone);box-shadow:0 0 60px -20px var(--tone-glow)}
   .pop{animation:pop 260ms ease-out both}
   @keyframes pop{from{opacity:0;transform:translateY(8px)}}
-  .verdict .tag{display:block;font-size:.85rem;font-weight:600;color:var(--ink-2)}
+  .verdict .tag{display:block;font-size:.9rem;font-weight:600;color:var(--tone)}
   .figure{font-size:clamp(2.8rem,14vw,4.25rem);font-weight:600;line-height:1.1;letter-spacing:-.02em;margin:4px 0;overflow-wrap:anywhere}
-  .verdict[data-sign="pos"] .figure{color:var(--primary)}
-  .verdict[data-sign="neg"] .figure,.verdict[data-sign="zero"] .figure{color:var(--danger)}
-  .plain{font-weight:500}
+  .verdict .figure{color:var(--tone);text-shadow:0 0 36px var(--tone-glow)}
+  .plain{font-weight:600;color:var(--tone)}
   .ledger{list-style:none;margin:16px 0 0;padding:0;border:1px solid var(--line);border-radius:10px}
   .ledger li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px;font-size:.92rem;color:var(--ink-2)}
   .ledger li + li{border-top:1px solid var(--line)}
   .ledger li span{font-weight:600;color:var(--ink)}
 
-  .say{margin-top:16px;padding:20px 16px;border-radius:var(--r-lg);background:var(--primary-soft)}
-  .verdict[data-sign="neg"] .say,.verdict[data-sign="zero"] .say{background:var(--danger-soft)}
+  .say{margin-top:16px;padding:20px 16px;border-radius:var(--r-lg);background:var(--tone-soft);border:1px solid var(--tone-line);border-inline-start-width:4px}
+  .say h2{color:var(--tone)}
   .say h2{font-size:1.3rem;font-weight:600;line-height:1.3;margin-bottom:8px;text-wrap:balance}
   .say p{color:var(--ink)}
   .say p + p{margin-top:10px}
@@ -106,9 +116,9 @@
 </header>
 
 <section class="hero page">
-  <svg class="illo" viewBox="0 0 96 76" role="img" aria-label="מטבעות"><path d="M8 46a40 11 0 0 0 80 0v10a40 11 0 0 1-80 0z" fill="#526845"/><ellipse cx="48" cy="46" rx="40" ry="11" fill="#9EAE91"/><path d="M8 32a40 11 0 0 0 80 0v10a40 11 0 0 1-80 0z" fill="#526845"/><ellipse cx="48" cy="32" rx="40" ry="11" fill="#9EAE91"/><path d="M8 18a40 11 0 0 0 80 0v10a40 11 0 0 1-80 0z" fill="#526845"/><ellipse cx="48" cy="18" rx="40" ry="11" fill="#9EAE91"/><text x="48" y="24" text-anchor="middle" font-family="IBM Plex Sans Hebrew, sans-serif" font-weight="600" font-size="17" fill="#3E4F38">₪</text></svg>
+  <div class="coins" aria-hidden="true"><i></i><i></i><i></i></div>
   <span class="eyebrow">מחשבון תזרים</span>
-  <h1>כמה כסף באמת נשאר לכם בסוף החודש?</h1>
+  <h1>כמה כסף באמת נשאר לכם <em>בסוף החודש?</em></h1>
   <p>ממלאים כמה נכנס וכמה יוצא ומקבלים אומדן ראשוני למצב שלכם. שתי דקות, בלי הרשמה.</p>
 </section>
 
@@ -168,6 +178,7 @@
       <span class="tag" id="verdictTag">הפער החודשי</span>
       <div class="figure" id="figure">0 ₪</div>
       <p class="plain" id="plain"></p>
+      <div class="flow" id="flow" aria-hidden="true"></div>
 
       <ul class="ledger">
         <li>נכנס <span id="bIncome">0 ₪</span></li>
@@ -320,6 +331,24 @@
     if(shown) renderVerdict(s, false);
   }
 
+  function drawFlow(s, animate){
+    var flow = $("flow");
+    var parts = [["נכנס", s.income], ["קבועות", s.fixed], ["הלוואות", s.loans], ["משתנות", s.variable]];
+    var max = Math.max.apply(null, parts.map(function(p){ return p[1]; })) || 1;
+    flow.textContent = "";
+    flow.classList.toggle("anim", !!animate && !reduceMotion);
+    parts.forEach(function(p){
+      var col = document.createElement("div");
+      var bar = document.createElement("i");
+      bar.style.height = Math.round(p[1] / max * 100) + "%";
+      var lbl = document.createElement("small");
+      lbl.textContent = p[0];
+      col.appendChild(bar);
+      col.appendChild(lbl);
+      flow.appendChild(col);
+    });
+  }
+
   function renderVerdict(s, animate){
     var m = MESSAGES[s.sign];
     verdict.setAttribute("data-sign", s.sign);
@@ -331,6 +360,7 @@
     $("bFixed").textContent = money(s.fixed);
     $("bLoans").textContent = money(s.loans);
     $("bVariable").textContent = money(s.variable);
+    drawFlow(s, animate);
     $("sayTitle").textContent = m.title;
     var body = $("sayBody");
     body.textContent = "";

@@ -10,17 +10,19 @@
 <meta name="tool:type" content="מחשבון">
 <meta name="tool:public" content="true">
 <meta name="tool:lead" content="false">
-<meta name="theme-color" content="#F4F2EA" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#121611" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0A1610">
 <link rel="icon" href="../../admin/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&family=Frank+Ruhl+Libre:wght@700;900&display=swap">
 <link rel="stylesheet" href="../../shared/style.css">
+<link rel="stylesheet" href="../../shared/luxe.css">
 <style>
-  /* chart series: validated with dataviz validate_palette.js (light on #FFF, dark on #1A2018) */
-  :root{--s-value:#4E7A3A;--s-deposit:#B9893D}
-  @media (prefers-color-scheme:dark){:root{--s-value:#457A35;--s-deposit:#BC8B3A}}
+  /* chart series on the dark glass card: the value in gold, the deposits in emerald */
+  :root{--s-value:#E9C766;--s-deposit:#4FA374}
+  .chart .area{opacity:.22}
+  .chart svg.anim .line{stroke-dasharray:1;animation:luxe-draw 1.8s ease-out both}
+  .chart svg.anim .area{animation:luxe-fade 1.2s ease-out both .6s}
 
   .row label{display:block;font-weight:600;color:var(--ink);margin-bottom:2px}
   .row .hint{margin:0 0 10px}
@@ -37,7 +39,7 @@
   .switch b{font-weight:600}
   .switch small{display:block;color:var(--ink-2);font-size:.85rem;font-weight:400}
   .switch input{appearance:none;-webkit-appearance:none;flex:none;width:46px;height:28px;border-radius:999px;background:var(--line-strong);position:relative;cursor:pointer;transition:background var(--t);margin:0}
-  .switch input::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);transition:inset-inline-start var(--t)}
+  .switch input::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:22px;height:22px;border-radius:50%;background:#F2ECDC;transition:inset-inline-start var(--t)}
   .switch input:checked{background:var(--primary)}
   .switch input:checked::after{inset-inline-start:21px}
   .reveal{margin-top:12px}
@@ -93,8 +95,10 @@
 </header>
 
 <section class="hero page">
-  <h1>מחשבון ריבית דריבית</h1>
-  <p>כמה הכסף שלכם יכול לגדול? ממלאים כמה מפקידים, לכמה זמן ובאיזו תשואה, ורואים כמה יצטבר אחרי דמי ניהול ומס.</p>
+  <div class="coins grow" aria-hidden="true"><i></i><i></i><i></i></div>
+  <span class="eyebrow">מחשבון ריבית דריבית</span>
+  <h1>כמה הכסף שלכם <em>יכול לגדול?</em></h1>
+  <p>ממלאים כמה מפקידים, לכמה זמן ובאיזו תשואה, ורואים כמה יצטבר אחרי דמי ניהול ומס.</p>
 </section>
 
 <main class="page">
@@ -314,7 +318,8 @@
 
     const r = calc(p);
     $('tag').textContent = 'צפוי לעמוד לרשותכם' + (p.tax !== 'none' ? ' אחרי מס' : '') + ' בעוד ' + p.years + ' שנים';
-    $('figure').textContent = money(r.net);
+    if (animateNext) countUp($('figure'), r.net);
+    else { counting++; $('figure').textContent = money(r.net); }
     $('figSub').textContent = r.deposits > 0 ? 'פי ' + (Math.round(r.net / r.deposits * 10) / 10).toLocaleString('he-IL') + ' מסך ההפקדות' : '';
 
     const rows = [['סך ההפקדות', money(r.deposits)]];
@@ -349,6 +354,23 @@
 
     drawChart(r.series);
     drawTable(r.series);
+    animateNext = false;
+  }
+
+  // "חשב" plays the number and the chart once; typing afterwards updates them quietly
+  const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let animateNext = false, counting = 0;
+  // rAF stops in a background tab, so a timer lands the final number anyway
+  function countUp(node, to) {
+    const id = ++counting, t0 = performance.now(), dur = 1100;
+    const step = t => {
+      if (id !== counting) return;
+      const p = Math.min(1, (t - t0) / dur);
+      node.textContent = money(to * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+    setTimeout(() => { if (id === counting) node.textContent = money(to); }, dur + 400);
   }
 
   function drawTable(series) {
@@ -400,9 +422,10 @@
       t.textContent = i;
     }
     const path = key => series.map((s, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(s[key]).toFixed(1)).join(' ');
-    el('path', { d: path('value') + ' L' + x(n) + ' ' + y(0) + ' L' + x(0) + ' ' + y(0) + ' Z', fill: 'var(--s-value)', opacity: '.1' }, svg);
-    el('path', { d: path('deposits'), fill: 'none', stroke: 'var(--s-deposit)', 'stroke-width': 2, 'stroke-linejoin': 'round' }, svg);
-    el('path', { d: path('value'), fill: 'none', stroke: 'var(--s-value)', 'stroke-width': 2, 'stroke-linejoin': 'round' }, svg);
+    if (animateNext) svg.classList.add('anim');
+    el('path', { class: 'area', d: path('value') + ' L' + x(n) + ' ' + y(0) + ' L' + x(0) + ' ' + y(0) + ' Z', fill: 'var(--s-value)' }, svg);
+    el('path', { class: 'line', pathLength: 1, d: path('deposits'), fill: 'none', stroke: 'var(--s-deposit)', 'stroke-width': 2.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
+    el('path', { class: 'line', pathLength: 1, d: path('value'), fill: 'none', stroke: 'var(--s-value)', 'stroke-width': 3, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
 
     // direct labels at the line ends, nudged apart when close
     const end = series[n];
@@ -472,6 +495,7 @@
       return;
     }
     $('formErr').textContent = '';
+    animateNext = !reduceMotion;
     render();
     if (document.activeElement) document.activeElement.blur(); // closes the phone keyboard
     const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
