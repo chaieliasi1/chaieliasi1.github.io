@@ -1,0 +1,114 @@
+/* העיצוב של מערכת הניהול בלבד: כהה וזוהר. נטען רק ב-admin/index.html, אחרי admin.css.
+   התוכנית הכלכלית טוענת את admin.css אבל לא את הקובץ הזה, אז היא נשארת כמו שהיא. */
+
+:root{
+  color-scheme:dark;
+  --bg:#0E0F14;
+  --surface:#191B23;
+  --surface-2:#232631;
+  --line:rgba(255,255,255,.07);
+  --line-strong:rgba(255,255,255,.14);
+  --ink:#F2F2F5;
+  --ink-2:#A3A6B4;
+  --ink-3:#6E7181;
+  --placeholder:#8A8D9B;
+  --primary:#C6F36B;      /* ליים */
+  --primary-press:#B2E04F;
+  --on-primary:#14151B;
+  --primary-soft:rgba(198,243,107,.14);
+  --accent:#B9A6FF;       /* לילך */
+  --sage:#B9A6FF;
+  --pink:#FF9EC7;
+  --sky:#7FD6FF;
+  --warn:#FFC56B;
+  --warn-soft:rgba(255,197,107,.14);
+  --danger:#FF8A8A;
+  --danger-soft:rgba(255,138,138,.13);
+  --wa:#5FE39A;
+  --glow:0 8px 28px rgba(198,243,107,.28);
+  --r:14px;
+  --r-lg:20px;
+}
+
+body{
+  background:
+    radial-gradient(60rem 28rem at 85% -10%,rgba(146,112,255,.22),transparent 70%),
+    radial-gradient(40rem 22rem at 0% 0%,rgba(255,158,199,.10),transparent 70%),
+    var(--bg);
+  background-attachment:fixed;
+}
+
+/* top bar: שקוף-כהה, הלוגו נשאר על אריח השמנת */
+.mast{background:rgba(14,15,20,.82);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.logo{border-color:transparent}
+
+/* surfaces */
+.card{border-color:var(--line)}
+.field{background:var(--surface-2);border-color:var(--line-strong)}
+select.field{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23A3A6B4' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.ghost{background:var(--surface-2);border-color:var(--line)}
+.go,.fab{box-shadow:var(--glow)}
+.fab{border-radius:18px}
+.head h1{font-weight:700}
+
+/* bottom tabs: הטאב הפעיל בגלולת ליים */
+.tabs{background:rgba(20,21,28,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top-color:var(--line)}
+.tabs a[aria-current="page"]{color:var(--ink)}
+.tabs a[aria-current="page"] i{background:var(--primary);color:var(--on-primary);box-shadow:0 4px 16px rgba(198,243,107,.3)}
+
+/* filters */
+.chips button{background:var(--surface);border-color:var(--line-strong)}
+.chips button[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+
+/* stage badges: צבע לכל שלב */
+.badge.new{background:var(--warn-soft);color:var(--warn)}
+.badge.contact,.badge.intro{background:rgba(185,166,255,.15);color:var(--accent)}
+.badge.sent{background:rgba(127,214,255,.13);color:var(--sky);box-shadow:none}
+.badge.signed,.badge.active{background:var(--primary);color:var(--on-primary)}
+.badge.lost{background:var(--danger-soft);color:var(--danger)}
+.sec .n{background:var(--surface-2)}
+.dot{box-shadow:0 0 8px var(--warn)}
+
+/* lists */
+.item .when{border-inline-end-color:var(--accent)}
+.quick{background:rgba(95,227,154,.1);border-color:transparent}
+
+/* person card */
+.nextup .cal{border-color:var(--line)}
+.nextup .cal i{background:var(--accent);color:var(--on-primary)}
+.progress i.on{background:var(--primary);box-shadow:0 0 10px rgba(198,243,107,.4)}
+.facts{background:var(--surface-2);border-color:transparent}
+.facts div + div{border-inline-start-color:var(--line)}
+.tl li::before{background:var(--bg)}
+.tl li.payment::before{background:var(--primary);box-shadow:0 0 8px rgba(198,243,107,.5)}
+.kv,.linkbox{background:var(--surface-2);border-color:transparent}
+
+/* stats: אריחים צבעוניים כמו בדוגמה */
+.tiles{gap:10px;border:0;background:none;overflow:visible}
+.tiles .tile{border:0;border-radius:var(--r-lg);color:var(--on-primary);padding:16px 18px;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}
+.tiles .tile:nth-child(1){background:var(--primary)}
+.tiles .tile:nth-child(2){background:var(--accent)}
+.tiles .tile:nth-child(3){background:var(--pink)}
+.tiles .tile:nth-child(4){background:var(--sky)}
+.tiles .tile small{color:rgba(20,21,27,.72);font-weight:500}
+.tiles .tile b{font-size:1.9rem;font-weight:700}
+.bars i{border-radius:8px;background:var(--primary);box-shadow:0 0 18px rgba(198,243,107,.35)}
+.bars div:not(:last-child) i{background:linear-gradient(to top,rgba(185,166,255,.35),var(--accent));box-shadow:none}
+.share .bar{background:var(--surface-2)}
+.share .bar i{background:linear-gradient(to left,var(--accent),var(--pink));border-radius:3px}
+
+/* sheet + toast */
+.sheet{border-top:1px solid var(--line-strong)}
+.sheet::backdrop{background:rgba(5,6,10,.7);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.toast{background:var(--surface-2);color:var(--ink);border:1px solid var(--line-strong);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.toast.bad{background:var(--danger);color:var(--on-primary)}
+.demo{border:1px solid rgba(255,197,107,.25)}
+
+@media (hover:hover){
+  .tiles a.tile:hover{filter:brightness(1.06)}
+  .tabs a:not([aria-current="page"]):hover i{background:var(--surface-2)}
+}
+@media (min-width:1024px){
+  .tabs{background:rgba(20,21,28,.7);border-inline-end-color:var(--line)}
+  .tiles .tile + .tile{border-inline-start:0}
+}
