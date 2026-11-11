@@ -3,7 +3,7 @@
   'use strict';
 
   const STAGES = [
-    ['new', 'ליד חדש'], ['contact', 'בקשר'], ['intro', 'שיחת היכרות'], ['sent', 'נשלח חוזה'],
+    ['new', 'ליד חדש'], ['contact', 'בקשר'], ['intro', 'שיחת אפיון והתאמה'], ['sent', 'נשלח חוזה'],
     ['signed', 'חתם'], ['active', 'בליווי'], ['ended', 'סיים'], ['lost', 'לא רלוונטי']
   ];
   const STAGE = Object.fromEntries(STAGES);
@@ -388,13 +388,13 @@
       next.push(h('div', { class: 'row' },
         h('div', { class: 'nextup' },
           h('div', { class: 'cal' }, h('i', {}, d.toLocaleDateString('he-IL', { month: 'short' })), h('b', {}, d.getDate())),
-          h('div', {}, h('b', {}, isProcess ? 'פגישה ' + (p.meetingsDone + 1) + ' מתוך ' + MEETINGS : 'שיחת היכרות'), h('div', { class: 'hint', style: 'margin:0' }, when(p.nextMeetingAt)))),
+          h('div', {}, h('b', {}, isProcess ? 'פגישה ' + (p.meetingsDone + 1) + ' מתוך ' + MEETINGS : 'שיחת אפיון והתאמה'), h('div', { class: 'hint', style: 'margin:0' }, when(p.nextMeetingAt)))),
         h('div', { class: 'btns', style: 'margin-top:1rem' },
           h('button', { class: 'ghost', type: 'button', onclick: () => meetingDone(p, act, isProcess) }, 'התקיימה'),
           h('button', { class: 'ghost', type: 'button', onclick: () => scheduleSheet(p, act, isProcess) }, 'שינוי מועד'))));
     } else if (p.stage !== 'lost' && p.stage !== 'ended') {
       next.push(h('div', { class: 'row' },
-        h('h2', {}, inProcess ? 'קביעת הפגישה הבאה' : 'קביעת שיחת היכרות'),
+        h('h2', {}, inProcess ? 'קביעת הפגישה הבאה' : 'קביעת שיחת אפיון והתאמה'),
         h('p', { class: 'hint' }, 'נכנס ליומן גוגל שלך עם תזכורת שעה לפני.'),
         h('button', { class: 'ghost', type: 'button', style: 'width:100%;padding-block:.75rem', onclick: () => scheduleSheet(p, act, inProcess) }, 'בחירת מועד')));
     }
@@ -509,7 +509,7 @@
       const r = await act(null, 'crm_meeting', { at: new Date(at.value).toISOString(), minutes: Number(len.querySelector('input:checked').value) });
       if (r) { closeSheet(); toast('נקבע ביומן'); loadAll().catch(() => {}); } else go.disabled = false;
     } },
-      h('div', { class: 'row' }, closeX(), h('h2', {}, (inProcess ? 'פגישה ' + (p.meetingsDone + 1) : 'שיחת היכרות') + ' עם ' + p.name)),
+      h('div', { class: 'row' }, closeX(), h('h2', {}, (inProcess ? 'פגישה ' + (p.meetingsDone + 1) : 'שיחת אפיון והתאמה') + ' עם ' + p.name)),
       h('div', { class: 'row' }, h('label', { class: 'lbl', for: 'm-at' }, 'מתי'), at, h('span', { class: 'lbl' }, 'כמה זמן'), len, go)), at);
   }
 

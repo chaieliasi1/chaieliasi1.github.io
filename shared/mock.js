@@ -47,14 +47,14 @@
     ev(people[0], 'lead', 'השאיר פרטים במחשבון תזרים: ' + people[0].pain, { tool: 'cashflow', toolTitle: 'מחשבון תזרים', src: 'instagram', values: { 'הכנסות': '18,500 ₪', 'הוצאות קבועות': '9,200 ₪', 'הלוואות ומשכנתא': '5,100 ₪', 'הוצאות משתנות': '6,000 ₪', 'פער חודשי': '-1,800 ₪', 'מצב': 'תזרים שלילי' } });
     ev(people[1], 'lead', 'השאירה פרטים במחשבון תזרים: ' + people[1].pain, { tool: 'cashflow', toolTitle: 'מחשבון תזרים', src: 'tool', values: { 'פער חודשי': '2,300 ₪', 'מצב': 'תזרים חיובי' } });
     ev(people[2], 'note', 'פנו בעקבות המלצה של יעל ורון. רוצים לסדר את החובות לפני לידה.');
-    ev(people[2], 'meeting', 'נקבעה שיחת היכרות');
+    ev(people[2], 'meeting', 'נקבעה שיחת אפיון והתאמה');
     ev(people[3], 'onboarding', 'נוצר קישור לחוזה ולשאלון, על סך 2,400 ₪');
     ev(people[4], 'payment', '', { amount: 1200, method: 'bit' }, iso(now - 62 * DAY));
     ev(people[4], 'meeting', 'התקיימה פגישה 2 מתוך 4\nבנינו תקציב חודשי. משימה: לבטל שני מנויים.', null, iso(now - 20 * DAY));
     ev(people[5], 'payment', '', { amount: 2200, method: 'transfer' }, iso(now - 200 * DAY));
     ev(people[5], 'stage', 'סיים', null, people[5].endedAt);
     return { people, events, agenda: [
-      { title: 'שיחת היכרות: דניאל ומיכל אברהם', start: at(1, 20), end: at(1, 21) },
+      { title: 'שיחת אפיון והתאמה: דניאל ומיכל אברהם', start: at(1, 20), end: at(1, 21) },
       { title: 'פגישה 3 מתוך 4: יעל ורון מזרחי', start: at(2, 19), end: at(2, 20) }
     ] };
   }
@@ -79,7 +79,7 @@
     if (s === 'ended') { p.endedAt = iso(Date.now()); p.followupAt = addMonths(Date.now(), 3); p.deleteAfter = addMonths(Date.now(), 6); }
     if (s === 'lost') p.followupAt = '';
   }
-  const LABEL = { new: 'ליד חדש', contact: 'בקשר', intro: 'שיחת היכרות', sent: 'נשלח חוזה', signed: 'חתם', active: 'בליווי', ended: 'סיים', lost: 'לא רלוונטי' };
+  const LABEL = { new: 'ליד חדש', contact: 'בקשר', intro: 'שיחת אפיון והתאמה', sent: 'נשלח חוזה', signed: 'חתם', active: 'בליווי', ended: 'סיים', lost: 'לא רלוונטי' };
   const fmt = t => new Date(t).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' });
 
   function handle(req) {
@@ -141,7 +141,7 @@
         if (isNaN(start)) fail('invalid');
         const kind = p.nextMeetingAt && p.nextMeetingKind ? p.nextMeetingKind : ['sent', 'signed', 'active'].includes(p.stage) ? 'process' : 'intro';
         p.nextMeetingKind = kind;
-        const title = (kind === 'process' ? 'פגישה ' + (p.meetingsDone + 1) + ' מתוך ' + MEETINGS : 'שיחת היכרות') + ': ' + p.name;
+        const title = (kind === 'process' ? 'פגישה ' + (p.meetingsDone + 1) + ' מתוך ' + MEETINGS : 'שיחת אפיון והתאמה') + ': ' + p.name;
         d.agenda = d.agenda.filter(a => !a.title.endsWith(': ' + p.name));
         d.agenda.push({ title, start: start.toISOString(), end: new Date(start.getTime() + 3600000).toISOString() });
         d.agenda.sort((a, b) => a.start.localeCompare(b.start));
@@ -152,7 +152,7 @@
         return done(get(p.id));
       }
       case 'crm_meeting_done': {
-        let label = 'התקיימה שיחת היכרות';
+        let label = 'התקיימה שיחת אפיון והתאמה';
         const kind = p.nextMeetingKind || (['sent', 'signed', 'active'].includes(p.stage) ? 'process' : 'intro');
         p.nextMeetingKind = '';
         if (kind === 'process' && ['sent', 'signed', 'active'].includes(p.stage)) {
