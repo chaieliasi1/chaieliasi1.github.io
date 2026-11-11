@@ -214,7 +214,7 @@
     view.append(agenda.length ? card(agenda.map(a => {
       const p = S.people.find(x => a.title.endsWith(': ' + x.name));
       const inner = [h('div', { class: 'when' }, a.allDay ? 'כל היום' : time(a.start), h('small', {}, dayLabel(a.start))),
-        h('div', { class: 'main' }, h('b', {}, a.title.split(': ').pop()), h('small', {}, a.title.includes(': ') ? a.title.split(': ')[0] : ''))];
+        h('div', { class: 'main' }, h('b', {}, a.title.split(': ').pop()), h('small', {}, a.title.includes(': ') ? a.title.split(': ')[0].replace('שיחת היכרות', 'שיחת אפיון והתאמה') : ''))];
       return p ? h('a', { class: 'item', href: '#p=' + p.id }, inner) : h('div', { class: 'item' }, inner);
     })) : card(h('div', { class: 'all-clear' }, 'אין פגישות ב-7 הימים הקרובים')));
 
