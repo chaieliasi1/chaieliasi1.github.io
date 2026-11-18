@@ -174,12 +174,13 @@
         return done(get(p.id));
       }
       case 'crm_onboard': {
-        const a = Math.round(Number(req.amount));
-        if (!(a > 0) || !['c', 'm', 'f'].includes(req.gender)) fail('invalid');
+        const tbd = req.amount === 'tbd', blank = req.amount === '' || req.amount == null;
+        const a = tbd || blank ? 0 : Math.round(Number(req.amount));
+        if ((!tbd && !blank && !(a > 0)) || !['c', 'm', 'f'].includes(req.gender)) fail('invalid');
         p.onboardingToken = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('');
         p.amount = a; p.gender = req.gender;
         stage(p, 'sent');
-        event(p.id, 'onboarding', 'נוצר קישור לחוזה ולשאלון, על סך ' + a.toLocaleString('he-IL') + ' ₪');
+        event(p.id, 'onboarding', 'נוצר קישור לחוזה ולשאלון, ' + (tbd ? 'הסכום טרם נקבע' : blank ? 'בלי סכום בחוזה' : 'על סך ' + a.toLocaleString('he-IL') + ' ₪'));
         const g = get(p.id);
         return done(Object.assign({ url: g.person.onboardingUrl }, g));
       }

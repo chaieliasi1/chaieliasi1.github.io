@@ -434,7 +434,7 @@
       view.append(sec('תשלום'), card(
         h('div', { class: 'row' },
           h('div', { class: 'facts' },
-            h('div', {}, h('small', {}, 'סוכם'), h('b', {}, money(p.amount))),
+            h('div', {}, h('small', {}, 'סוכם'), h('b', {}, p.amount ? money(p.amount) : 'לא נקבע')),
             h('div', {}, h('small', {}, 'שולם'), h('b', {}, money(p.paid))),
             h('div', { class: left > 0 ? 'due' : 'clear' }, h('small', {}, 'נשאר'), h('b', {}, money(Math.max(left, 0))))),
           h('button', { class: 'ghost', type: 'button', style: 'width:100%;margin-top:.9rem;padding-block:.75rem', onclick: () => paymentSheet(p, act) }, 'רישום תשלום'))));
@@ -474,23 +474,36 @@
   function onboardRow(p, act) {
     const amount = h('input', { class: 'field', id: 'ob-amount', inputmode: 'numeric', autocomplete: 'off', placeholder: '0', value: p.amount ? p.amount.toLocaleString('he-IL') : '' });
     amount.addEventListener('input', () => { const d = amount.value.replace(/\D/g, '').slice(0, 7); amount.value = d ? Number(d).toLocaleString('he-IL') : ''; });
+    const AMOUNT_KIND = { sum: 'סכום', tbd: 'טרם נקבע', blank: 'בלי סכום' };
+    const kinds = h('div', { class: 'pills', role: 'radiogroup', 'aria-label': 'סכום בחוזה' }, Object.keys(AMOUNT_KIND).map(k =>
+      h('label', {}, h('input', { type: 'radio', name: 'ob-kind', value: k, checked: k === 'sum' }), h('span', {}, AMOUNT_KIND[k]))));
+    const amountBox = h('div', { class: 'money' }, amount);
+    const kindHint = h('p', { class: 'hint', style: 'margin-top:.6rem', hidden: true });
+    kinds.addEventListener('change', () => {
+      const k = kinds.querySelector('input:checked').value;
+      amountBox.hidden = k !== 'sum';
+      kindHint.hidden = k === 'sum';
+      kindHint.textContent = k === 'tbd' ? 'בחוזה ייכתב: טרם נקבע' : 'בחוזה השורה של התמורה תישאר ריקה';
+    });
     const genders = h('div', { class: 'pills', role: 'radiogroup', 'aria-label': 'פנייה בחוזה' }, Object.keys(GENDER).map(k =>
       h('label', {}, h('input', { type: 'radio', name: 'ob-g', value: k, checked: k === (p.gender || '') }), h('span', {}, GENDER[k]))));
     const err = h('p', { class: 'err', role: 'alert' });
     const go = h('button', { class: 'go', type: 'submit' }, 'יצירת קישור לחוזה ולשאלון');
     return h('form', { class: 'row', novalidate: true, onsubmit: e => {
       e.preventDefault();
+      const kind = kinds.querySelector('input:checked').value;
       const sum = Number(amount.value.replace(/\D/g, ''));
       const g = genders.querySelector('input:checked');
       err.textContent = '';
-      if (!(sum > 0) || !g) { err.textContent = 'צריך סכום ופנייה (זוג / זכר / נקבה).'; return; }
-      act(go, 'crm_onboard', { amount: sum, gender: g.value }, r => {
+      if ((kind === 'sum' && !(sum > 0)) || !g) { err.textContent = kind === 'sum' ? 'צריך סכום ופנייה (זוג / זכר / נקבה).' : 'צריך לבחור פנייה (זוג / זכר / נקבה).'; return; }
+      act(go, 'crm_onboard', { amount: kind === 'sum' ? sum : kind === 'tbd' ? 'tbd' : '', gender: g.value }, r => {
         toast('הקישור מוכן');
         if (p.phone) window.open(waUrl(p.phone, onboardText(p.name, r.url, g.value)), '_blank');
       });
     } },
       h('h2', {}, 'סגרנו? שליחת חוזה ושאלון'),
-      h('label', { class: 'lbl', for: 'ob-amount' }, 'הסכום שסגרנו'), h('div', { class: 'money' }, amount),
+      h('span', { class: 'lbl' }, 'הסכום שסגרנו'), kinds,
+      h('label', { class: 'sr', for: 'ob-amount' }, 'הסכום'), amountBox, kindHint,
       h('span', { class: 'lbl' }, 'פנייה בחוזה'), genders, err, go);
   }
 
